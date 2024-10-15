@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login/Signup Page</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #c9df8a 0%, #9dbaa9 100%);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start; 
+            min-height: 100vh; 
+            overflow-x: hidden; 
+        }
+
+        .container {
+            background-color: rgba(255, 255, 255, 0.9);
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+            padding: 40px;
+            width: 400px;
+            max-width: 90%;
+            transition: all 0.3s ease;
+            margin-top: 20px; 
+            margin-bottom: 40px; 
+        }
+
+        .container:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+        }
+
+        @media (max-width: 400px) {
+            .container {
+                padding: 30px;
+            }
+        }
+
+::-webkit-scrollbar {
+    display: none;
+}
+
+        .text-danger {
+            color: #ff4d4d;  
+            font-size: 0.85rem;  
+            margin-top: 5px;  
+            display: block;  
+        }
+
+        h2 {
+            color: #234d20;
+            text-align: center;
+            margin-bottom: 30px;
+            font-weight: 600;
+            font-size: 2rem;
+        }
+
+        .tabs {
+            display: flex;
+            margin-bottom: 30px;
+            border-radius: 50px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .tab {
+            flex: 1;
+            text-align: center;
+            padding: 15px;
+            cursor: pointer;
+            background-color: #e0e0e0;
+            color: #234d20;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .tab.active {
+            background-color: #234d20;
+            color: white;
+        }
+
+        .form {
+            display: none;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .form.active {
+            display: block;
+            opacity: 1;
+        }
+
+        .input-group {
+            position: relative;
+            margin-bottom: 25px;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 15px 20px 15px 50px;
+            border: none;
+            border-radius: 50px;
+            background-color: #f0f0f0;
+            color: #333;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .input-group input:focus {
+            outline: none;
+            box-shadow: 0 0 0 2px #234d20;
+        }
+
+        .input-group .icon-left {
+            position: absolute;
+            left: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #234d20;
+            font-size: 1.2rem;
+        }
+
+        .input-group .icon-right {
+            position: absolute;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #234d20;
+            cursor: pointer;
+            font-size: 1.2rem;
+            transition: all 0.3s ease;
+        }
+
+        .input-group .icon-right:hover {
+            color: #1a3a18;
+        }
+
+        button {
+            width: 100%;
+            padding: 15px;
+            background-color: #234d20;
+            color: white;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(35, 77, 32, 0.3);
+        }
+
+        button:hover {
+            background-color: #1a3a18;
+            box-shadow: 0 7px 20px rgba(35, 77, 32, 0.4);
+            transform: translateY(-2px);
+        }
+
+        @media (max-width: 400px) {
+            .container {
+                padding: 30px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Welcome</h2>
+
+        <!-- Error messages display -->
+        {% if messages %}
+        <div class="alert">
+            {% for message in messages %}
+                {{ message }}
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <div class="tabs">
+            <div class="tab active" onclick="showTab('login')">Login</div>
+            <div class="tab" onclick="showTab('signup')">Sign Up</div>
+        </div>
+        
+        <!-- Login Form -->
+        <form id="loginForm" class="form active" method="POST" action="{% url 'userlogin' %}">
+            {% csrf_token %}
+            <div class="input-group">
+                <i class="fas fa-user icon-left"></i>
+                <input type="email" name="email" placeholder="Email" required>
+                {% if form.email.errors %}
+                    <span class="text-danger">
+                        {{ form.email.errors.0 }}
+                    </span>
+                {% endif %}
+            </div>
+            <div class="input-group">
+                <i class="fas fa-lock icon-left"></i>
+                <input type="password" name="password" placeholder="Password" required>
+                <i class="fas fa-eye icon-right toggle-password"></i>
+                {% if form.password.errors %}
+                    <span class="text-danger">
+                        {{ form.password.errors.0 }} 
+                    </span>
+                {% endif %}
+            </div>
+            <button type="submit" name="login">Login</button>
+        </form>
+
+        <!-- Sign Up Form -->
+        <form id="signupForm" class="form" method="POST" action="{% url 'usersignup' %}">
+            {% csrf_token %}
+            <div class="input-group">
+                <i class="fas fa-user icon-left"></i>
+                <input type="text" name="username" placeholder="Name" required>
+            </div>
+            <div class="input-group">
+                <i class="fas fa-envelope icon-left"></i>
+                <input type="email" name="email" placeholder="Email" required>
+            </div>
+            <div class="input-group">
+                <i class="fas fa-user-check icon-left"></i>
+                <select name="role" required style="margin-left: 4rem;">
+                    <option value="" disabled selected>Select Role</option>
+                    <option value="Coordinator">Coordinator</option>
+                    <option value="Volunteer">Volunteer</option>
+                    <option value="Secretary">Secretary</option>
+                </select>
+            </div>
+            <div class="input-group">
+                <i class="fas fa-user icon-left"></i>
+                <select name="gender" required style="margin-left: 4rem;">
+                    <option value="" disabled selected>Select Gender</option>
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
+                    <option value="Other">Other</option>
+                </select>
+            </div>
+            <div class="input-group">
+                <i class="fas fa-building icon-left"></i>
+                <select name="department" required style="margin-left: 4rem;">
+                    <option value="" disabled selected>Select Department</option>
+                    <option value="CSE">Computer Science</option>
+                    <option value="ECE">Electronics</option>
+                    <option value="ME">Mechanical</option>
+                    <option value="CE">Civil</option>
+                </select>
+            </div>
+            <div class="input-group">
+                <i class="fas fa-id-badge icon-left"></i>
+                <input type="text" name="div" placeholder="DIV" required>
+            </div>
+            <div class="input-group">
+                <i class="fas fa-id-card icon-left"></i>
+                <input type="text" name="prn" placeholder="PRN" required>
+            </div>
+            <div class="input-group">
+                <i class="fas fa-phone icon-left"></i>
+                <input type="tel" name="contact" placeholder="Contact Number" required>
+            </div>
+            <div class="input-group">
+                <i class="fas fa-tint icon-left"></i>
+                <input type="text" name="blood_group" placeholder="Blood Group" required>
+            </div>
+            <div class="input-group">
+                <i class="fas fa-lock icon-left"></i>
+                <input type="password" name="password1" placeholder="Password" required>
+                <i class="fas fa-eye icon-right toggle-password"></i>
+            </div>
+            <div class="input-group">
+                <i class="fas fa-lock icon-left"></i>
+                <input type="password" name="password2" placeholder="Confirm Password" required>
+                <i class="fas fa-eye icon-right toggle-password"></i>
+            </div>
+            <button type="submit" name="signup">Sign Up</button>
+        </form>
+    </div>
+
+
+    <script>
+        function showTab(tabName) {
+            const tabs = document.querySelectorAll('.tab');
+            const forms = document.querySelectorAll('.form');
+
+            tabs.forEach(tab => tab.classList.remove('active'));
+            forms.forEach(form => {
+                form.classList.remove('active');
+                form.style.display = 'none';
+            });
+
+            document.querySelector(`.tab:nth-child(${tabName === 'login' ? '1' : '2'})`).classList.add('active');
+            const activeForm = document.getElementById(`${tabName}Form`);
+            activeForm.style.display = 'block';
+            setTimeout(() => activeForm.classList.add('active'), 50);
+        }
+        
+
+        // Toggle password visibility
+        document.querySelectorAll('.toggle-password').forEach(icon => {
+            icon.addEventListener('click', function(e) {
+                e.stopPropagation();
+                const input = this.previousElementSibling;
+                if (input.type === 'password') {
+                    input.type = 'text';
+                    this.classList.replace('fa-eye', 'fa-eye-slash');
+                } else {
+                    input.type = 'password';
+                    this.classList.replace('fa-eye-slash', 'fa-eye');
+                }
+            });
+        });
+    </script>
+</body>
+</html>
