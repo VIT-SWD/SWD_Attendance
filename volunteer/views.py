@@ -24,8 +24,6 @@ def allot_activity(request):
         volunteer = get_object_or_404(Volunteer, user=request.user)
     return render(request, 'volunteers.html', {'volunteer': volunteer})
 
-
-
 @method_decorator(csrf_exempt, name='dispatch')
 class MarkAttendanceView(LoginRequiredMixin, View):
     login_url = '/userlogin/' 
@@ -33,16 +31,15 @@ class MarkAttendanceView(LoginRequiredMixin, View):
     def post(self, request, *args, **kwargs):
         try:
             coord_prn = request.POST.get('coord_prn')
-            vol_name = request.POST.get('vol_name')
-            vol_prn = request.POST.get('vol_prn')
+            coord_name = request.POST.get('coord_name')
+            volunteer = get_object_or_404(Volunteer, user=request.user)
+            vol_name = volunteer.vname
+            vol_prn = volunteer.prn
             actual_latitude = float(request.POST.get('actual_latitude'))
             actual_longitude = float(request.POST.get('actual_longitude'))
             geo_photo = request.FILES.get('geo_photo')
             
             volunteer = Volunteer.objects.get(user_id=vol_prn)
-            
-            if not volunteer.activity:
-                return JsonResponse({'error': 'No activity selected. Please select an activity first.'}, status=400)
             
             activity_name = volunteer.activity
             activity = Activity.objects.get(name=activity_name)
@@ -85,7 +82,7 @@ class MarkAttendanceView(LoginRequiredMixin, View):
                 if in_time_window_start <= current_time <= in_time_window_end:
                     # Mark in-time attendance
                     volunteer.marked_IN_attendance = True
-                    volunteer.attendance += f"{attendance}, "
+                    # volunteer.attendance += f"{attendance}, "
                     volunteer.save()
 
                     Attendance.objects.create(
@@ -106,12 +103,12 @@ class MarkAttendanceView(LoginRequiredMixin, View):
                 # Out-Time Attendance
                 if out_time_window_start <= current_time <= out_time_window_end:
                     # Mark out-time attendance
-                    attendance = f"${today.strftime('%d-%m-%Y')}"
-                    volunteer.attendance += f"{attendance}, "
+                    # attendance = f"${today.strftime('%d-%m-%Y')}"
+                    volunteer.attendance[-13] = "$"
                     volunteer.save()
 
                     attendance_record = Attendance.objects.get(vol_prn=vol_prn, activity=activity_name)
-                    attendance_record.marked_IN_attendance = True
+                    attendance_record.marked_IN_attendance = False
                     attendance_record.save()
 
                     return JsonResponse({'message': 'Out-time attendance marked successfully!'}, status=200)

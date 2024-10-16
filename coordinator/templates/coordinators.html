@@ -345,7 +345,7 @@
 
         <nav class="navbar">
             <a href="" id="D_content"><i class="fas fa-home"></i><span>Home</span></a>
-            <a href="coordinators.html" id="eventsLink"><i class="fas fa-calendar-alt"></i>Events</a>
+            <a href="coordinators.html" id="eventsLink" style="color:#888888;"><i class="fas fa-calendar-alt" style="margin-left: 2; padding-right: 3;"></i><span>Events</span></a>
             <a href="contact.html" id="contact"><i class="fas fa-headset"></i><span>Contact us</span></a>
             <form id="logoutForm" method="POST" action="{% url 'logout_view' %}">
                 {% csrf_token %}

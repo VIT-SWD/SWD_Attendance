@@ -22,6 +22,7 @@ def generate_and_save_qr(request):
         coordinator.save()
         
         prn = coordinator.prn
+        name = coordinator.cname
         if not prn:
             return HttpResponse("PRN not found", status=400)
         
@@ -31,7 +32,7 @@ def generate_and_save_qr(request):
             border=5
         )
 
-        data = f"PRN: {prn}\nActivity: {coordinator.activity}"
+        data = f"PRN: {prn}\nName: {name}\nActivity: {coordinator.activity}"
         qr.add_data(data)
         qr.make(fit=True)
 

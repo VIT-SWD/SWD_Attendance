@@ -46,6 +46,12 @@ def add_activity(request):
             longitude=float(longitude) if longitude else None 
         )
         new_activity.save()
+
+        volunteers = Volunteer.objects.filter(activity=activity)
+        for volunteer in volunteers:
+            volunteer.attendance += f"#{eventDate.strftime('%d-%m-%Y')}"
+            volunteer.save()
+
         return redirect('secretary')
 
     return redirect('secretary')
@@ -85,14 +91,23 @@ def download_attendance(request):
         
         headers = ['Name', 'Email', 'PRN', 'Contact No.']
         
+        # all_dates = set()
+        # for volunteer in volunteers:
+        #     attendance_dates = volunteer.attendance.split(', ')
+        #     for date_entry in attendance_dates:
+        #         date = date_entry[1:] 
+        #         all_dates.add(date)
+        
+        # sorted_dates = sorted(all_dates, key=lambda x: x) 
         all_dates = set()
         for volunteer in volunteers:
             attendance_dates = volunteer.attendance.split(', ')
             for date_entry in attendance_dates:
-                date = date_entry[1:] 
-                all_dates.add(date)
-        
-        sorted_dates = sorted(all_dates, key=lambda x: x) 
+                if len(date_entry) > 1:  # Ensure the entry is not empty and valid
+                    date = date_entry[1:]  # Extract the date, assuming it starts with a special character
+                    all_dates.add(date)
+
+        sorted_dates = sorted(all_dates, key=lambda x: x)
         headers.extend(sorted_dates)  
         
         for col_num, header in enumerate(headers, 1):

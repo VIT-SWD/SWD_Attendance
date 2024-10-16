@@ -49,6 +49,9 @@
             }
         }
 
+        .error {
+            color: red;
+        }
 ::-webkit-scrollbar {
     display: none;
 }
@@ -127,10 +130,17 @@
         .input-group .icon-left {
             position: absolute;
             left: 20px;
-            top: 50%;
             transform: translateY(-50%);
             color: #234d20;
             font-size: 1.2rem;
+        }
+
+        .input-group .text-icon {
+            padding-top: 45px;
+        }        
+
+        .input-group .drop-icon {
+            padding-top: 30px;
         }
 
         .input-group .icon-right {
@@ -179,112 +189,155 @@
     <div class="container">
         <h2>Welcome</h2>
 
-        <!-- Error messages display -->
-        {% if messages %}
-        <div class="alert">
-            {% for message in messages %}
-                {{ message }}
-            {% endfor %}
-        </div>
-        {% endif %}
-
         <div class="tabs">
-            <div class="tab active" onclick="showTab('login')">Login</div>
-            <div class="tab" onclick="showTab('signup')">Sign Up</div>
+            <div class="tab {% if active_tab == 'login' %}active{% endif %}" onclick="showTab('login')">Login</div>
+            <div class="tab {% if active_tab == 'signup' %}active{% endif %}" onclick="showTab('signup')">Sign Up</div>
         </div>
         
         <!-- Login Form -->
-        <form id="loginForm" class="form active" method="POST" action="{% url 'userlogin' %}">
+        <form id="loginForm" class="form {% if active_tab == 'login' %}active{% endif %}" method="POST" action="{% url 'userlogin' %}">
             {% csrf_token %}
             <div class="input-group">
-                <i class="fas fa-user icon-left"></i>
+                <i class="fas fa-user icon-left text-icon"></i>
                 <input type="email" name="email" placeholder="Email" required>
                 {% if form.email.errors %}
-                    <span class="text-danger">
+                    <span class="error">
                         {{ form.email.errors.0 }}
                     </span>
                 {% endif %}
             </div>
             <div class="input-group">
-                <i class="fas fa-lock icon-left"></i>
+                <i class="fas fa-lock icon-left text-icon"></i>
                 <input type="password" name="password" placeholder="Password" required>
                 <i class="fas fa-eye icon-right toggle-password"></i>
                 {% if form.password.errors %}
-                    <span class="text-danger">
+                    <span class="error">
                         {{ form.password.errors.0 }} 
                     </span>
                 {% endif %}
             </div>
+            {% if messages %}
+                <div class="error">
+                    {% for message in messages %}
+                        {{ message }}
+                    {% endfor %}
+                </div>
+                <br>
+            {% endif %}
             <button type="submit" name="login">Login</button>
         </form>
 
         <!-- Sign Up Form -->
-        <form id="signupForm" class="form" method="POST" action="{% url 'usersignup' %}">
+        <form id="signupForm" class="form {% if active_tab == 'signup' %}active{% endif %}" method="POST" action="{% url 'usersignup' %}">
             {% csrf_token %}
             <div class="input-group">
-                <i class="fas fa-user icon-left"></i>
-                <input type="text" name="username" placeholder="Name" required>
+                <i class="fas fa-user icon-left text-icon"></i>
+                <input type="text" name="username" placeholder="Name" value="{{ form_data.username }}" required>
+                {% if errors.username %}
+                    <small class="error">{{ errors.username }}</small>
+                {% endif %}
             </div>
             <div class="input-group">
-                <i class="fas fa-envelope icon-left"></i>
-                <input type="email" name="email" placeholder="Email" required>
+                <i class="fas fa-envelope icon-left text-icon"></i>
+                <input type="email" name="email" placeholder="Email" value="{{ form_data.email }}" required>
+                {% if errors.email %}
+                    <small class="error">{{ errors.email }}</small>
+                {% endif %}
             </div>
             <div class="input-group">
-                <i class="fas fa-user-check icon-left"></i>
+                <i class="fas fa-user-check icon-left drop-icon"></i>
                 <select name="role" required style="margin-left: 4rem;">
-                    <option value="" disabled selected>Select Role</option>
-                    <option value="Coordinator">Coordinator</option>
-                    <option value="Volunteer">Volunteer</option>
-                    <option value="Secretary">Secretary</option>
+                    <option value="" disabled {% if not form_data.role %}selected{% endif %}>Select Role</option>
+                    <option value="Volunteer" {% if form_data.role == 'Volunteer' %}selected{% endif %}>Volunteer</option>
+                    <option value="Coordinator" {% if form_data.role == 'Coordinator' %}selected{% endif %}>Coordinator</option>
+                    <option value="Secretary" {% if form_data.role == 'Secretary' %}selected{% endif %}>Secretary</option>
                 </select>
+                {% if errors.role %}
+                    <small class="error">{{ errors.role }}</small>
+                {% endif %}
             </div>
             <div class="input-group">
-                <i class="fas fa-user icon-left"></i>
+                <i class="fas fa-user icon-left drop-icon"></i>
                 <select name="gender" required style="margin-left: 4rem;">
-                    <option value="" disabled selected>Select Gender</option>
-                    <option value="Male">Male</option>
-                    <option value="Female">Female</option>
-                    <option value="Other">Other</option>
+                    <option value="" disabled {% if not form_data.gender %}selected{% endif %}>Select Gender</option>
+                    <option value="Male" {% if form_data.gender == 'Male' %}selected{% endif %}>Male</option>
+                    <option value="Female" {% if form_data.gender == 'Female' %}selected{% endif %}>Female</option>
+                    <option value="Other" {% if form_data.gender == 'Other' %}selected{% endif %}>Other</option>
                 </select>
+                {% if errors.gender %}
+                    <small class="error">{{ errors.gender }}</small>
+                {% endif %}
             </div>
             <div class="input-group">
-                <i class="fas fa-building icon-left"></i>
+                <i class="fas fa-building icon-left drop-icon"></i>
                 <select name="department" required style="margin-left: 4rem;">
-                    <option value="" disabled selected>Select Department</option>
-                    <option value="CSE">Computer Science</option>
-                    <option value="ECE">Electronics</option>
-                    <option value="ME">Mechanical</option>
-                    <option value="CE">Civil</option>
+                    <option value="" disabled {% if not form_data.department %}selected{% endif %}>Select Department</option>
+                    <option value="CSE" {% if form_data.department == 'CSE' %}selected{% endif %}>Computer Science</option>
+                    <option value="ECE" {% if form_data.department == 'ECE' %}selected{% endif %}>Electronics</option>
+                    <option value="ME" {% if form_data.department == 'ME' %}selected{% endif %}>Mechanical</option>
+                    <option value="CE" {% if form_data.department == 'CE' %}selected{% endif %}>Civil</option>
                 </select>
+                {% if errors.department %}
+                    <small class="error">{{ errors.department }}</small>
+                {% endif %}
             </div>
             <div class="input-group">
-                <i class="fas fa-id-badge icon-left"></i>
-                <input type="text" name="div" placeholder="DIV" required>
+                <i class="fas fa-id-badge icon-left text-icon"></i>
+                <input type="text" name="div" placeholder="Division" value="{{ form_data.div }}" required>
+                {% if errors.div %}
+                    <small class="error">{{ errors.div }}</small>
+                {% endif %}
             </div>
             <div class="input-group">
-                <i class="fas fa-id-card icon-left"></i>
-                <input type="text" name="prn" placeholder="PRN" required>
+                <i class="fas fa-id-card icon-left text-icon"></i>
+                <input type="text" name="prn" placeholder="PRN" value="{{ form_data.prn }}" required>
+                {% if errors.prn %}
+                    <small class="error">{{ errors.prn }}</small>
+                {% endif %}
             </div>
             <div class="input-group">
-                <i class="fas fa-phone icon-left"></i>
-                <input type="tel" name="contact" placeholder="Contact Number" required>
+                <i class="fas fa-phone icon-left text-icon"></i>
+                <input type="tel" name="contact" placeholder="Contact Number" value="{{ form_data.contact }}" required>
+                {% if errors.contact %}
+                    <small class="error">{{ errors.contact }}</small>
+                {% endif %}
             </div>
             <div class="input-group">
-                <i class="fas fa-tint icon-left"></i>
-                <input type="text" name="blood_group" placeholder="Blood Group" required>
+                <i class="fas fa-tint icon-left drop-icon"></i>
+                <select name="blood_group" required style="margin-left: 4rem;">
+                    <option value="" disabled {% if not form_data.blood_group %}selected{% endif %}>Select Blood Group</option>
+                    <option value="A+" {% if form_data.blood_group == 'A+' %}selected{% endif %}>A+</option>
+                    <option value="A-" {% if form_data.blood_group == 'A-' %}selected{% endif %}>A-</option>
+                    <option value="B+" {% if form_data.blood_group == 'B+' %}selected{% endif %}>B+</option>
+                    <option value="B-" {% if form_data.blood_group == 'B-' %}selected{% endif %}>B-</option>
+                    <option value="AB+" {% if form_data.blood_group == 'AB+' %}selected{% endif %}>AB+</option>
+                    <option value="AB-" {% if form_data.blood_group == 'AB-' %}selected{% endif %}>AB-</option>
+                    <option value="O+" {% if form_data.blood_group == 'O+' %}selected{% endif %}>O+</option>
+                    <option value="O-" {% if form_data.blood_group == 'O-' %}selected{% endif %}>O-</option>
+                </select>
+                {% if errors.blood_group %}
+                    <small class="error">{{ errors.blood_group }}</small>
+                {% endif %}
             </div>
             <div class="input-group">
-                <i class="fas fa-lock icon-left"></i>
+                <i class="fas fa-lock icon-left text-icon"></i>
                 <input type="password" name="password1" placeholder="Password" required>
                 <i class="fas fa-eye icon-right toggle-password"></i>
+                {% if errors.password %}
+                    <small class="error">{{ errors.password }}</small>
+                {% endif %}
             </div>
             <div class="input-group">
-                <i class="fas fa-lock icon-left"></i>
+                <i class="fas fa-lock icon-left text-icon"></i>
                 <input type="password" name="password2" placeholder="Confirm Password" required>
                 <i class="fas fa-eye icon-right toggle-password"></i>
+                {% if errors.password %}
+                    <small class="error">{{ errors.password }}</small>
+                {% endif %}
             </div>
-            <button type="submit" name="signup">Sign Up</button>
+            <button type="submit" class="btn">Sign Up</button>
         </form>
+        
     </div>
 
 
@@ -294,17 +347,17 @@
             const forms = document.querySelectorAll('.form');
 
             tabs.forEach(tab => tab.classList.remove('active'));
-            forms.forEach(form => {
-                form.classList.remove('active');
-                form.style.display = 'none';
-            });
+            forms.forEach(form => form.classList.remove('active'));
 
             document.querySelector(`.tab:nth-child(${tabName === 'login' ? '1' : '2'})`).classList.add('active');
-            const activeForm = document.getElementById(`${tabName}Form`);
-            activeForm.style.display = 'block';
-            setTimeout(() => activeForm.classList.add('active'), 50);
+            document.getElementById(`${tabName}Form`).classList.add('active');
         }
-        
+
+        // Ensure the correct form is displayed on page load based on active tab
+        document.addEventListener('DOMContentLoaded', function () {
+            const activeTab = '{{ active_tab|default:"login" }}';
+            showTab(activeTab);
+        });
 
         // Toggle password visibility
         document.querySelectorAll('.toggle-password').forEach(icon => {
@@ -320,6 +373,7 @@
                 }
             });
         });
+
     </script>
 </body>
 </html>
