@@ -20,20 +20,20 @@ def role_based_login(request):
         try:
             user = User.objects.get(email=email)
 
-            user = authenticate(request, username=user.username, password=password)
+            user = authenticate(request, username=email, password=password)
         except User.DoesNotExist:
             user = None
 
         if user is not None:
             auth_login(request, user)  # Log in the user
             
-            role = None
-            if hasattr(user, 'coordinator'):
-                role = 'Coordinator'
-            elif hasattr(user, 'volunteer'):
-                role = 'Volunteer'
-            elif hasattr(user, 'secretary'):
-                role = 'Secretary'
+            role = user.first_name
+            # if hasattr(user, 'coordinator'):
+            #     role = 'Coordinator'
+            # elif hasattr(user, 'volunteer'):
+            #     role = 'Volunteer'
+            # elif hasattr(user, 'secretary'):
+            #     role = 'Secretary'
 
             if role == 'Coordinator':
                 return redirect('coordinator')
@@ -102,7 +102,7 @@ def signup_view(request):
             return render(request, 'login.html', {'errors': errors, 'form_data': request.POST, 'active_tab': 'signup'})
 
         # Create user
-        user = User.objects.create_user(username=email, password=password1)
+        user = User.objects.create_user(username=email, password=password1, first_name=role, last_name=name)
 
         # Create role-based objects
         if role == 'Volunteer':
@@ -115,7 +115,9 @@ def signup_view(request):
                 div=div,
                 prn=prn,
                 contact_num=contact,
-                blood_group=blood_group
+                blood_group=blood_group,
+                registered_academic_year='2021-2022',
+                registered_semester=2
             )
         elif role == 'Coordinator':
             Coordinator.objects.create(
@@ -127,7 +129,9 @@ def signup_view(request):
                 div=div,
                 prn=prn,
                 contact_num=contact,
-                blood_group=blood_group
+                blood_group=blood_group,
+                registered_academic_year='2021-2022',
+                registered_semester=2
             )
         elif role == 'Secretary':
             Secretary.objects.create(
@@ -139,7 +143,9 @@ def signup_view(request):
                 div=div,
                 prn=prn,
                 contact_num=contact,
-                blood_group=blood_group
+                blood_group=blood_group,
+                registered_academic_year='2021-2022',
+                registered_semester=2
             )
         else:
             messages.error(request, "Invalid role selected.")

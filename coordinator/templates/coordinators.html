@@ -296,7 +296,7 @@
 
         <section class="flex">
 
-            <a href="" class="logo">Hello, {{ user.username }} !!</a>
+            <a href="" class="logo">Hello, {{ user.last_name }} !!</a>
 
             <div class="icons">
                 <div id="menu-btn" class="fas fa-bars"></div>
@@ -305,7 +305,7 @@
 
             <div class="profile">
                 <img src="{% if user.profile.image %}{{ user.profile.image.url }}{% else %}{% static 'images/default-profile.jpg' %}{% endif %}" class="image" alt="user-image">
-                <h3 class="name">{{ user.username }}</h3>
+                <h3 class="name">{{ user.last_name }}</h3>
                 <p class="role">
                     {% if role_info %}
                         {{ role_info.role }}
@@ -332,14 +332,14 @@
 
         <div class="profile">
             <img src="{% if user.profile.image %}{{ user.profile.image.url }}{% else %}{% static 'images/default-profile.jpg' %}{% endif %}" class="image" alt="user-image">
-                <h3 class="name">{{ user.username }}</h3>
+                <!-- <h3 class="name">{{ user.username }}</h3>
                 <p class="role">
                     {% if role_info %}
                         {{ role_info.role }}
                     {% else %}
                         No Role
                     {% endif %}
-                </p>
+                </p> -->
             <a href="{% url 'profile'%}" class="btn">view profile</a>
         </div>
 
@@ -364,17 +364,72 @@
             </header>
             <div id="dashboardContent">
                 <div class="D-container container" id="D-container">
-                    <h1 style="font-size: 19px; font-weight: bold;"  >WELCOME TO SW&D</h1>
-                    <p style="font-size: 14px;">WE ARE THE VIT SOCIALS <br> WORKING FOR SOCIETY</p>
+                    <h1 style="font-size: 19px; font-weight: bold;"  >Welcome To SW&D's Smart Attendance System</h1>
+                    <p style="font-size: 14px;">WE WORK FOR THE BETTERMENT<br>OF THE SOCIETY</p>
                 </div>
             </div>
 
             <!-- Activity -->
             <div class="container" id="Activity" >
-                {% if not coordinator.qr_code %}
+                <h1>Choose Social Services</h1>
+                {% if coordinator.registered_academic_year == CURR_YEAR and coordinator.registered_semester == CURR_SEM %}
+                    {% if not coordinator.qr_codeSS %}
+                    <form method="POST" action="{% url 'generate_qr' %}">
+                        {% csrf_token %}
+                        <select name="activity" id="activitySelec" required>
+                            <option value="">Select an activity</option>
+                            <option value="workshop">Workshop</option>
+                            <option value="seminar">Seminar</option>
+                            <option value="meetup">Meetup</option>
+                        </select>
+                        
+                        <button type="submit">Generate QR Code</button>
+                    </form>
+                    <div>
+                        
+                    {% else %}
+                    <p>Scan this QR code to mark your attendance for {{ coordinator.activity }}</p>
+                        <img src="{{ coordinator.qr_codeSS.url }}" alt="QR Code for {{ coordinator.activity }}">
+                    {% endif %}
+                {% else %}
+                    <p>You are not registered for this semester.</p>
+                {% endif %}
+
+                <br><br>
+
+                <h1>Choose Flagship Event</h1>
+                {% if coordinator.registered_academic_year == CURR_YEAR and coordinator.registered_semester == CURR_SEM %}
+                    {% if not coordinator.qr_codeFE %}
+                    <form method="POST" action="{% url 'generate_qr' %}">
+                        {% csrf_token %}
+                        <select name="flagship" id="activitySelec" required>
+                            <option value="">Select an activity</option>
+                            <option value="workshop">Workshop</option>
+                            <option value="seminar">Seminar</option>
+                            <option value="meetup">Meetup</option>
+                        </select>
+                        
+                        <button type="submit">Generate QR Code</button>
+                    </form>
+                    <div>
+                        
+                    {% else %}
+                    <p>Scan this QR code to mark your attendance for {{ coordinator.flagshipEvent }}</p>
+                        <img src="{{ coordinator.qr_codeFE.url }}" alt="QR Code for {{ coordinator.flagshipEvent }}">
+                    {% endif %}
+                {% else %}
+                    <p>You are not registered for this semester.</p>
+                {% endif %}
+                </div>
+                </div>
+
+                <br><br>
+
+                <!-- {% if not coordinator.qr_codeFE %}
                 <form method="POST" action="{% url 'generate_qr' %}">
                     {% csrf_token %}
-                    <select name="activity" id="activitySelec" required>
+                    <h1>Choose Flagship Event</h1>
+                    <select name="flagship" id="activitySelec" required>
                         <option value="">Select an activity</option>
                         <option value="workshop">Workshop</option>
                         <option value="seminar">Seminar</option>
@@ -386,10 +441,10 @@
                 <div>
                     
                 {% else %}
-                <p>Scan this QR code to mark your attendance for {{ coordinator.activity }}</p>
-                    <img src="{{ coordinator.qr_code.url }}" alt="QR Code for {{ coordinator.activity }}">
+                <p>Scan this QR code to mark your attendance for {{ coordinator.flagshipEvent }}</p>
+                    <img src="{{ coordinator.qr_codeFE.url }}" alt="QR Code for {{ coordinator.flagshipEvent }}">
                 {% endif %}
-                </div>
+                </div> -->
             </div>
 
             <!-- Contact Us Section -->
@@ -399,26 +454,49 @@
                         <div class="box">
                             <i class="fas fa-phone"></i>
                             <h3>Phone Number</h3>
-                            <a href="tel:1234567890">123-456-7890</a>
-                            <a href="tel:1112223333">111-222-3333</a>
+                            <a href="tel:1234567890">+91 80108 971017</a>
+                            <a href="tel:1112223333">+91 91681 51957</a>
                         </div>
           
                         <div class="box">
                             <i class="fas fa-envelope"></i>
                             <h3>Email Address</h3>
-                            <a href="mailto:DJDGIFNGNI@gmail.com">JGFNSGI@gmail.com</a>
-                            <a href="mailto:JDGSNKFD@gmail.com">JFSHGUIHFS@gmail.com</a>
+                            <a href="mailto:DJDGIFNGNI@gmail.com">vitswd@vit.edu</a>
+                            {% comment %} <a href="mailto:JDGSNKFD@gmail.com">JFSHGUIHFS@gmail.com</a> {% endcomment %}
                         </div>
           
                         <div class="box">
                             <i class="fas fa-map-marker-alt"></i>
                             <h3>Office Address</h3>
-                            <a href="#">Flat No. 1, A-1 Building,Jogeshwari,Mumbai,India-400104</a>
+                            <a href="#">VISHWAKARMA INSTITUTE OF TECHNOLOGY VIT, Upper Indira Nagar, Bibwewadi, Pune, Maharashtra 411037</a>
+                        </div>
+                    </div>
+                </section>
+             </div><div id="contactUsContent" class="content-section" style="display: none;">
+                <section class="contact">
+                    <div  id="how" class="box-container" style="padding-top: 10%;">
+                        <div class="box">
+                            <i class="fas fa-phone"></i>
+                            <h3>Phone Number</h3>
+                            <a href="tel:1234567890">+91 80108 971017</a>
+                            <a href="tel:1112223333">+91 91681 51957</a>
+                        </div>
+          
+                        <div class="box">
+                            <i class="fas fa-envelope"></i>
+                            <h3>Email Address</h3>
+                            <a href="mailto:DJDGIFNGNI@gmail.com">vitswd@vit.edu</a>
+                            {% comment %} <a href="mailto:JDGSNKFD@gmail.com">JFSHGUIHFS@gmail.com</a> {% endcomment %}
+                        </div>
+          
+                        <div class="box">
+                            <i class="fas fa-map-marker-alt"></i>
+                            <h3>Office Address</h3>
+                            <a href="#">VISHWAKARMA INSTITUTE OF TECHNOLOGY VIT, Upper Indira Nagar, Bibwewadi, Pune, Maharashtra 411037</a>
                         </div>
                     </div>
                 </section>
              </div>
-             
 
             <div id="notification" class="notification">Logged out successfully!</div>
     </section>

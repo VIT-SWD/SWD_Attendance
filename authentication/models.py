@@ -9,9 +9,9 @@ class Volunteer(models.Model):
     domain = models.CharField(max_length=30)
     activity = models.CharField(max_length=30, default='')
     dept = models.CharField(max_length=60)
-    academic_year = models.CharField(max_length=10)
-    registered_academic_year = models.CharField(max_length=30)
-    registered_semester = models.IntegerField(null=True, blank=True)
+    academic_year = models.CharField(max_length=10, default='FY')
+    registered_academic_year = models.CharField(max_length=30, default='2024-2025')
+    registered_semester = models.IntegerField(null=True, default=1)
     div = models.CharField(max_length=10)
     prn = models.BigIntegerField()
     contact_num = models.FloatField()
@@ -19,7 +19,7 @@ class Volunteer(models.Model):
     guardian_faculty = models.CharField(max_length=50, default='not_assigned')
     attendance = models.CharField(max_length=350, default='')
     marked_IN_attendance = models.BooleanField(default=False)
-    role = models.CharField(max_length=20, default='Volunteer')
+    # role = models.CharField(max_length=20, default='Volunteer')
     profile_picture = models.ImageField(upload_to='static/profile_pictures', default='default-profile.jpg')
     def str(self):
         return self.vname
@@ -27,14 +27,14 @@ class Volunteer(models.Model):
         ordering = ['vname']
 
 class Coordinator(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE) 
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
     cname = models.CharField(max_length=40)
     email = models.EmailField(max_length=30)
     gender = models.CharField(max_length=10)
     dept = models.CharField(max_length=60)
     academic_year = models.CharField(max_length=10)
-    registered_academic_year = models.CharField(max_length=30)
-    registered_semester = models.IntegerField(null=True, blank=True)
+    registered_academic_year = models.CharField(max_length=30, default='2024-2025')
+    registered_semester = models.IntegerField(null=True, default=1)
     div = models.CharField(max_length=10)
     prn = models.BigIntegerField()
     contact_num = models.FloatField()
@@ -43,8 +43,9 @@ class Coordinator(models.Model):
     flagshipEvent = models.CharField(max_length=30)
     domain = models.CharField(max_length=30, null=True)
     profile_picture = models.ImageField(upload_to='profile_pictures/', default='default-profile.jpg')
-    qr_code = models.ImageField(upload_to='qr_codes/', null=True, blank=True)
-    role = models.CharField(max_length=20, default='Coordinator')
+    qr_codeSS = models.ImageField(upload_to='qr_codes/Social_Services/', null=True, blank=True)
+    qr_codeFE = models.ImageField(upload_to='qr_codes/Flagship/', null=True, blank=True)
+    # role = models.CharField(max_length=20, default='Coordinator')
     def _str_(self):
         return self.cname
     class Meta:
@@ -58,8 +59,8 @@ class Secretary(models.Model):
     gender = models.CharField(max_length=10)
     dept = models.CharField(max_length=60)
     academic_year = models.CharField(max_length=10)
-    registered_academic_year = models.CharField(max_length=30)
-    registered_semester = models.IntegerField(default=2)
+    registered_academic_year = models.CharField(max_length=30, default='2024-2025')
+    registered_semester = models.IntegerField(null=True, default=1)
     domain = models.CharField(max_length=20)
     flagshipEvent = models.CharField(max_length=30, null=True)
     activity = models.CharField(max_length=20, null = True)
@@ -68,7 +69,7 @@ class Secretary(models.Model):
     blood_group = models.CharField(max_length=10, default='')
     contact_num = models.FloatField()
     profile_picture = models.ImageField(upload_to='static/profile_pictures', default='default-profile.jpg')
-    role = models.CharField(max_length=20, default='Secretary')
+    # role = models.CharField(max_length=20, default='Secretary')
     def _str_(self):
         return self.sname
     class Meta:
@@ -86,7 +87,6 @@ class Activity(models.Model):
     longitude = models.FloatField(null=True)      
     def __str__(self):
         return self.name
-    
 
 class FailedRegistration(models.Model):
     name = models.CharField(max_length=50, default='')

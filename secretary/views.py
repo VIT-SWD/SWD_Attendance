@@ -3,17 +3,23 @@ from django.shortcuts import render, redirect, get_object_or_404
 import requests, openpyxl, re
 from authentication.models import Activity, Secretary, Volunteer
 from django.contrib.auth.decorators import login_required
+from django.conf import settings
 
 @login_required(login_url='userlogin')
 def secretaryView(request):
     if request.method == 'POST':
-        activity = request.POST.get('activity')
         secretary = get_object_or_404(Secretary, user=request.user)
-        secretary.activity = activity
+        if request.POST.get('activity'):
+            activity = request.POST.get('activity')
+            secretary.activity = activity
+        else:
+            flagshipEvent = request.POST.get('flagship')
+            secretary.flagshipEvent = flagshipEvent
         secretary.save()
     else:
         secretary = get_object_or_404(Secretary, user=request.user)
-    return render(request, 'secretary.html', {'secretary': secretary})
+    print(settings.CURR_YEAR, settings.CURR_SEM)
+    return render(request, 'secretary.html', {'secretary': secretary, 'CURR_YEAR': settings.CURR_YEAR, 'CURR_SEM': settings.CURR_SEM})
 
 @login_required(login_url='userlogin')
 def add_activity(request):

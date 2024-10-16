@@ -1,4 +1,4 @@
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render, get_object_or_404, redirect
 from authentication.models import Volunteer
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_exempt
@@ -8,10 +8,12 @@ from django.views import View
 from django.utils.decorators import method_decorator
 from authentication.models import Attendance, Activity
 from datetime import datetime, timedelta
+from django.conf import settings
 
 @login_required(login_url='userlogin')
 def volunteer(request):
-    return render(request, 'volunteers.html')
+    volunteer = get_object_or_404(Volunteer, user=request.user)
+    return render(request, 'volunteers.html', {'volunteer': volunteer, 'CURR_YEAR': settings.CURR_YEAR, 'CURR_SEM': settings.CURR_SEM})
 
 @login_required(login_url='userlogin')
 def allot_activity(request):
@@ -20,9 +22,7 @@ def allot_activity(request):
         volunteer = get_object_or_404(Volunteer, user=request.user)
         volunteer.activity = activity
         volunteer.save()
-    else:
-        volunteer = get_object_or_404(Volunteer, user=request.user)
-    return render(request, 'volunteers.html', {'volunteer': volunteer})
+    return redirect('volunteer')
 
 @method_decorator(csrf_exempt, name='dispatch')
 class MarkAttendanceView(LoginRequiredMixin, View):

@@ -98,7 +98,7 @@ form#attendanceForm input[type="text"],
    
    <section class="flex">
 
-      <a href="" class="logo">Hello, {{user.username}} !!</a>
+      <a href="" class="logo">Hello, {{user.last_name}} !!</a>
    
       <div class="icons">
          <div id="menu-btn" class="fas fa-bars"></div>
@@ -158,59 +158,72 @@ form#attendanceForm input[type="text"],
    <br>
    <div id="dashboardContent">
       <div class="D-container container" id="D-container">
-        <h1 style="font-size: 19px; font-weight: bold;"  >WELCOME TO SW&D</h1>
-        <p style="font-size: 14px;">WE ARE THE VIT SOCIALS <br> WORKING FOR SOCIETY</p>
+        <h1 style="font-size: 19px; font-weight: bold;"  >Welcome To SW&D's Smart Attendance System</h1>
+        <p style="font-size: 14px;">WE WORK FOR THE BETTERMENT<br>OF THE SOCIETY</p>
       </div>
    </div>
 
    <div class="container" id="Activity" style="display: none;">
       <div id="chooseActivity" class="content hidden">
-      {% if not volunteer.activity %}
-          <h2 class="dashboard-title" style="font-size: 18px;">Choose Activity</h2>
-          <form method="POST" action="{% url 'allotactivity' %}">
-              {% csrf_token %}
-              <select id="activitySelect" class="activity-select" name="activity" required>
-                  <option value="">Select an activity</option>
-                  <option value="workshop">Workshop</option>
-                  <option value="seminar">Seminar</option>
-                  <option value="meetup">Meetup</option>
-              </select>
-              <button class="dashboard-btn" type="submit">Allot Activity</button>
-          </form>
-      {% else %}
-          <div>
-              <p>You have already chosen {{ volunteer.activity }}</p>
-          </div>
-      {% endif %}
+        <h1 class="dashboard-title" style="font-size: 18px;">Choose Activity</h1>
+        {% if volunteer.registered_academic_year == CURR_YEAR and volunteer.registered_semester == CURR_SEM %}
+            {% if not volunteer.activity %}
+                <form method="POST" action="{% url 'allotactivity' %}">
+                    {% csrf_token %}
+                    <select id="activitySelect" class="activity-select" name="activity" required>
+                        <option value="">Select an activity</option>
+                        <option value="workshop">Workshop</option>
+                        <option value="seminar">Seminar</option>
+                        <option value="meetup">Meetup</option>
+                    </select>
+                    <button class="dashboard-btn" type="submit">Allot Activity</button>
+                </form>
+            {% else %}
+                <div>
+                    <p>You have already chosen {{ volunteer.activity }}</p>
+                </div>
+            {% endif %}
+        {% else %}
+            <div>
+                <p>You are not registered for the current academic year and semester.</p>
+            </div>
+        {% endif %}
       </div>
 
       <div id="viewAttendance" class="content hidden">
-        {% if  volunteer.activity%}
-        <h2>Attendance Record</h2>
-        <br><br>
-        <button id="viewAttendanceTab">View Attendance</button>
-        <br><br><br>
-        <table>
-            <thead>
-                <tr>
-                    <th>Date</th>
-                    <th>Status</th>
-                </tr>
-            </thead>
-            <tbody id="attendanceTableBody">
-                <!-- Attendance data will be populated here -->
-            </tbody>
-        </table>        
-        {% else %}
-          <div>
-              <p>You haven't chosen or attended any activity.</p>
-          </div>
-      {% endif %}
+        {% if volunteer.registered_academic_year == CURR_YEAR and volunteer.registered_semester == CURR_SEM %}
+            {% if volunteer.activity%}
+            <h2>Attendance Record</h2>
+            <br><br>
+            <button id="viewAttendanceTab">View Attendance</button>
+            <br><br><br>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody id="attendanceTableBody">
+                    <!-- Attendance data will be populated here -->
+                </tbody>
+            </table>        
+            {% else %}
+            <div>
+                <p>You haven't chosen or attended any activity.</p>
+            </div>
+            {% endif %}
+            {% else %}
+            <div>
+                <p>You are not registered for the current academic year and semester.</p>
+            </div>
+        {% endif %}
     </div>
     
     
  
         <div id="markAttendance" class="content hidden">
+        {% if volunteer.registered_academic_year == CURR_YEAR and volunteer.registered_semester == CURR_SEM %}
         {% if volunteer.activity %}
         <h1 style="text-align: center;">Scan Coordinator QR</h1>
         <br>
@@ -271,7 +284,7 @@ form#attendanceForm input[type="text"],
         <video id="video" autoplay></video>
         <canvas id="canvas" style="display:none;"></canvas><br><br>
         <button type="button" id="capture-btn" style="cursor: pointer;">Take Photo</button><br>
-        <img id="photo" alt="Your captured photo will appear here" style="display: block; margin: 20px auto; max-width: 100%; align-items:center;"/>
+        <img id="photo" alt="Your captured photo will appear here" style="display: block; margin: 20px auto; max-width: 75%; align-items:center;"/>
         <input type="hidden" id="geo_photo" name="geo_photo">
         <input type="hidden" id="actual_latitude" name="actual_latitude">
         <input type="hidden" id="actual_longitude" name="actual_longitude">
@@ -284,6 +297,11 @@ form#attendanceForm input[type="text"],
               <p>You haven't chosen any activity. Please choose one activity.</p>
           </div>
       {% endif %}
+      {% else %}
+      <div>
+          <p>You are not registered for the current academic year and semester.</p>
+      </div>
+    {% endif %}
      </div>
 
      </div>
@@ -298,21 +316,21 @@ form#attendanceForm input[type="text"],
               <div class="box">
                   <i class="fas fa-phone"></i>
                   <h3>Phone Number</h3>
-                  <a href="tel:1234567890">123-456-7890</a>
-                  <a href="tel:1112223333">111-222-3333</a>
+                  <a href="tel:1234567890">+91 80108 971017</a>
+                  <a href="tel:1112223333">+91 91681 51957</a>
               </div>
 
               <div class="box">
                   <i class="fas fa-envelope"></i>
                   <h3>Email Address</h3>
-                  <a href="mailto:DJDGIFNGNI@gmail.com">JGFNSGI@gmail.com</a>
-                  <a href="mailto:JDGSNKFD@gmail.com">JFSHGUIHFS@gmail.com</a>
+                  <a href="mailto:DJDGIFNGNI@gmail.com">vitswd@vit.edu</a>
+                  {% comment %} <a href="mailto:JDGSNKFD@gmail.com">JFSHGUIHFS@gmail.com</a> {% endcomment %}
               </div>
 
               <div class="box">
                   <i class="fas fa-map-marker-alt"></i>
                   <h3>Office Address</h3>
-                  <a href="#">Flat No. 1, A-1 Building,Jogeshwari,Mumbai,India-400104</a>
+                  <a href="#">VISHWAKARMA INSTITUTE OF TECHNOLOGY VIT, Upper Indira Nagar, Bibwewadi, Pune, Maharashtra 411037</a>
               </div>
           </div>
       </section>
