@@ -299,7 +299,8 @@
             </div>
             <div class="input-group">
                 <i class="fas fa-id-badge icon-left text-icon"></i>
-                <input type="text" name="div" placeholder="Division" value="{{ form_data.div }}" required>
+                <input type="text" name="div" placeholder="Division" value="{{ form_data.div }}" required style="text-transform: uppercase;">
+
                 {% if errors.div %}
                     <small class="error">{{ errors.div }}</small>
                 {% endif %}

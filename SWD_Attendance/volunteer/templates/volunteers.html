@@ -1,0 +1,646 @@
+{% load static %}
+<html lang="en">
+<head>
+   <meta charset="UTF-8">
+   <meta http-equiv="X-UA-Compatible" content="IE=edge">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <title>Volunteer</title>
+   <link rel="icon" type="image/png" href="https://swd.vit.edu/img/swdlogo3.png">
+   <script src="https://unpkg.com/html5-qrcode/minified/html5-qrcode.min.js"></script>
+   <!-- font awesome cdn link  -->
+   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.2/css/all.min.css">
+   <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+   <!-- custom css file link  -->
+   <link rel="stylesheet" href="{% static 'style.css' %}">
+   <link rel="stylesheet" href="{% static 'style_volunteer.css' %}">
+</head>
+<style>
+    button
+    {
+        background-color: #c9df8a;
+        border-radius:8%;
+        padding: 1%;
+    }
+
+    form #attendanceForm input[type="text"],
+    .attendanceForm {
+        width: 100%;
+        padding: 10px;
+        margin-bottom: 15px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        font-size: 16px;
+        background-color: #f9f9f9;
+        color: #333;
+    }
+
+form#attendanceForm {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 10px;
+    width: 100%;
+    margin: 0 auto;
+    box-shadow: none; /* Removed background shadow */
+}
+
+form#attendanceForm input[type="text"],
+    button.dashboard-btn,
+    button#capture-btn,
+    form#attendanceForm button[type="submit"],
+    #reader {
+        font-size: 16px;
+        padding: 5px;
+        width: 100%;
+    }
+
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        background-color: #ffffff;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        margin-bottom: 20px;
+    }
+
+    thead tr {
+        background-color: #c9df8a;
+        color: #ffffff;
+    }
+
+    th, td {
+        padding: 12px 15px;
+        text-align: left;
+        border: 1px solid #ddd;
+    }
+
+    tbody tr:nth-child(even) {
+        background-color: #f9f9f9;
+    }
+
+    tbody tr:hover {
+        background-color: #f1f1f1;
+    }
+
+    th {
+        text-transform: uppercase;
+    }
+
+    td {
+        color: #555;
+    }
+
+    .hidden {
+        display: none;
+    }   
+    
+    </style>
+<body>
+<header class="header">
+   
+   <section class="flex">
+
+      <a href="" class="logo">Hello, {{user.last_name}} !!</a>
+   
+      <div class="icons">
+         <div id="menu-btn" class="fas fa-bars"></div>
+      </div>
+
+      <div class="profile">
+         <img src="images/pic-1.jpg" class="image" alt="">
+         <h3 class="name"></h3>
+         <p class="role">---</p>
+         <a href="{% url 'profile'%}" class="btn">view profile</a>
+         <div class="flex-btn">
+            <a href="{% url 'userlogin'%}" class="option-btn">login</a>
+            <a href="{% url 'userlogin'%}" class="option-btn">register</a>
+         </div>
+      </div>
+
+   </section>
+
+</header>   
+
+<div class="side-bar">
+
+   <div id="close-btn">
+      <i class="fas fa-times"></i>
+   </div>
+
+   <div class="profile">
+      <img src="{% if user.profile.image %}{{ user.profile.image.url }}{% else %}{% static 'images/default-profile.jpg' %}{% endif %}" class="image" alt="">
+      <h3 class="name"></h3>
+      <p class="role"></p>
+      <a href="{% url 'profile'%}" class="btn">view profile</a>
+   </div>
+
+   <nav class="navbar">
+        <a href="" id="D_content"><i class="fas fa-home"></i><span>Home</span></a>
+        <a href="#" id="activityLink"><i class="fas fa-tasks"></i><span>Activity</span></a>
+        <a href="#" id="markAttendanceLink"><i class="fas fa-clipboard-check"></i><span>Mark Attendance</span></a>
+        <a href="#" id="viewAttendanceLink"><i class="fas fa-eye"></i><span>View Attendance</span></a>
+        <a id="contactLink" href="contact.html"><i class="fas fa-headset"></i><span>Contact us</span></a>
+        <form id="logoutForm" method="POST" action="{% url 'logout_view' %}">
+         {% csrf_token %}
+         <button type="submit" id="logoutButton" class="logout-btn">
+             <i class="fas fa-sign-out-alt" style="margin-right: 8px;"></i> Logout
+         </button>
+         </form>
+    </nav>
+ 
+
+</div>
+
+<section class="courses">
+
+<div class="box-container" style="text-align: center;">
+   <header id="head">
+       Volunteer Dashboard
+   </header>
+   <br>
+   <div id="dashboardContent">
+      <div class="D-container container" id="D-container">
+        <h1 style="font-size: 19px; font-weight: bold;"  >Welcome To SW&D's Smart Attendance System</h1>
+        <p style="font-size: 14px;">WE WORK FOR THE BETTERMENT<br>OF THE SOCIETY</p>
+      </div>
+   </div>
+
+   <div class="container" id="Activity" style="display: none;">
+      <div id="chooseActivity" class="content hidden">
+        <h1 class="dashboard-title" style="font-size: 18px;">Choose Activity</h1>
+        {% if volunteer.registered_academic_year == CURR_YEAR and volunteer.registered_semester == CURR_SEM %}
+            {% if not volunteer.activity %}
+                <form method="POST" action="{% url 'allotactivity' %}">
+                    {% csrf_token %}
+                    <select id="activitySelect" class="activity-select" name="activity" required>
+                        {% if activities %}
+                            <option value="">Select an activity</option>
+                            {% for activity in activities %}
+                                <option value="{{ activity }}">{{ activity }}</option>
+                            {% endfor %}
+                        {% else %}
+                            <option value="">No activities available</option>
+                        {% endif %}
+                    </select>
+                    <button class="dashboard-btn" type="submit">Allot Activity</button>
+                </form>
+            {% else %}
+                <div>
+                    <p>You have already chosen {{ volunteer.activity }}</p>
+                </div>
+            {% endif %}
+        {% else %}
+            <div>
+                <p>You are not registered for the current academic year and semester.</p>
+            </div>
+        {% endif %}
+      </div>
+
+      <div id="viewAttendance" class="content hidden">
+        {% if volunteer.registered_academic_year == CURR_YEAR and volunteer.registered_semester == CURR_SEM %}
+            {% if volunteer.activity%}
+            <h2>Attendance Record</h2>
+            <br><br>
+            <button id="viewAttendanceTab">View Attendance</button>
+            <br><br><br>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody id="attendanceTableBody">
+                    <!-- Attendance data will be populated here -->
+                </tbody>
+            </table>        
+            {% else %}
+            <div>
+                <p>You haven't chosen or attended any activity.</p>
+            </div>
+            {% endif %}
+            {% else %}
+            <div>
+                <p>You are not registered for the current academic year and semester.</p>
+            </div>
+        {% endif %}
+    </div>
+    
+    
+ 
+        <div id="markAttendance" class="content hidden">
+        {% if volunteer.registered_academic_year == CURR_YEAR and volunteer.registered_semester == CURR_SEM %}
+        {% if volunteer.activity %}
+        <h1 style="text-align: center;">Scan Coordinator QR</h1>
+        <br>
+        
+        <div style="display: flex; justify-content: center;">
+            <div id="reader" style="width:65%; height: 50%;"></div><br>
+        </div><br>
+        <div id="result"></div>
+
+    <script>
+        function onScanSuccess(qrCodeMessage) {
+            // document.getElementById('result').innerText = `QR Code Message: ${qrCodeMessage}`;
+            document.getElementById('coord_name').value = `${qrCodeMessage.split('\nName: ')[1].split('\n')[0]}`;
+            document.getElementById('coord_prn').value = `${qrCodeMessage.substring(5, 13)}`;
+            
+            fetch('/mark_attendance/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                body: JSON.stringify({ qr_data: qrCodeMessage })
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Success:', data);
+            })
+            .catch((error) => {
+                console.error('Error:', error);
+            });
+
+            if (html5QrcodeScanner) {
+                html5QrcodeScanner.clear();
+            }
+        }
+
+        function onScanError(errorMessage) {
+            console.error('QR Code Scan Error:', errorMessage);
+        }
+
+        const html5QrcodeScanner = new Html5QrcodeScanner(
+            "reader", { fps: 10, qrbox: 250 });
+        html5QrcodeScanner.render(onScanSuccess, onScanError);
+    </script>
+         
+    
+    <form id="attendanceForm" method="POST" href="{% url 'mark_attendance' %}" style="text-align: center;">
+        {% csrf_token %}
+        <input type="text" id="coord_name" class="attendanceForm" name="coord_name" placeholder="Coordinator Name" readonly>
+        <input type="text" id="coord_prn" class="attendanceForm" name="coord_prn" placeholder="Coordinator PRN" readonly>
+        <!-- <input type="text" id="vol_name" class="attendanceForm" name="vol_name" placeholder="Volunteer Name" value="{{ user.username }}" readonly>
+        <input type="text" id="vol_prn" class="attendanceForm" name="vol_prn" placeholder="Volunteer PRN" value="{{ user.id }}" readonly> -->
+        
+        <br>
+         <h1 style="padding-top: 3%; text-align: center;">Take a Geotagged Photo</h1>
+        <br>
+
+        <video style="width:85%;" id="video" autoplay></video>
+        <canvas id="canvas" style="display:none;"></canvas><br><br>
+        <button type="button" id="capture-btn" style="cursor: pointer;">Take Photo</button><br>
+        <img id="photo" alt="Your captured photo will appear here" style="display: block; margin: 20px auto; max-width: 100%; align-items:center;"/>
+        <input type="hidden" id="geo_photo" name="geo_photo">
+        <input type="hidden" id="actual_latitude" name="actual_latitude">
+        <input type="hidden" id="actual_longitude" name="actual_longitude">
+
+        <select id="activitySelect" class="activity-select" name="venue" required>
+            {% if events %}
+                <option value="">Select Venue</option>
+                {% for event in events %}
+                    <option value="{{ event.venue }}">{{ event.venue }}</option>
+                {% endfor %}
+            {% else %}
+                <option value="">No venues available</option>
+                <option value="temp">temp</option>
+            {% endif %}
+        </select>
+        
+        <button type="submit" style="cursor: pointer;">Submit Attendance</button>
+    </form>
+    <p id="coordinates"></p>
+    {% else %}
+          <div>
+              <p>You haven't chosen any activity. Please choose one activity.</p>
+          </div>
+      {% endif %}
+      {% else %}
+      <div>
+          <p>You are not registered for the current academic year and semester.</p>
+      </div>
+    {% endif %}
+     </div>
+
+     </div>
+  </div>
+
+ </div>
+  
+
+   <div id="contactUsContent" class="content-section" style="display: none;">
+      <section class="contact">
+          <div  id="how" class="box-container" style="padding-top: 10%;">
+            <div class="box">
+                <i class="fas fa-phone"></i>
+                <h3>Phone Number</h3>
+                <a href="tel:8010897017">+91 80108 971017</a>
+                <a href="tel:9168151957">+91 91681 51957</a>
+            </div>
+
+            <div class="box">
+                <i class="fas fa-map-marker-alt"></i>
+                <h3>Office Address</h3>
+                <a href="https://www.google.com/maps/dir//Vishwakarma+Institute+of+Technology+(VIT),+VISHWAKARMA+INSTITUTE+OF+TECHNOLOGY+VIT,+Bibwewadi,+Pune,+Maharashtra+411037/data=!4m6!4m5!1m1!4e2!1m2!1m1!1s0x3bc2ea950f616219:0x321bdae2cea9f064?sa=X&ved=1t:57443&ictx=111">VISHWAKARMA INSTITUTE OF TECHNOLOGY VIT, Upper Indira Nagar, Bibwewadi, Pune, Maharashtra 411037</a>
+            </div>
+
+            <div class="box">
+                <i class="fas fa-envelope"></i>
+                <h3>Email Address</h3>
+                <a href="mailto:vitswd@vit.edu">vitswd@vit.edu</a>
+                {% comment %} <a href="mailto:JDGSNKFD@gmail.com">JFSHGUIHFS@gmail.com</a> {% endcomment %}
+            </div>
+          </div>
+      </section>
+   </div>
+</div>
+
+<div id="notification" class="notification">Logged out successfully!</div>
+
+<script>
+   document.addEventListener('DOMContentLoaded', () => {
+      const dashboardContent = document.getElementById("dashboardContent");
+      const Activity = document.getElementById('Activity');
+      const contactUsContent = document.getElementById("contactUsContent");
+
+      const dashboardLink = document.getElementById("D_content");
+      const contactLink = document.getElementById("contactLink");
+      const activityLink = document.getElementById("activityLink");
+      const markAttendanceLink = document.getElementById("markAttendanceLink");
+      const viewAttendanceLink = document.getElementById("viewAttendanceLink");
+
+      const CA = document.getElementById('chooseActivity');
+      const viewAttendance = document.getElementById('viewAttendance');
+      const markAttendance = document.getElementById('markAttendance');
+
+      // Function to show content sections
+      function showContent(contentToShow) {
+         dashboardContent.style.display = "none";
+         Activity.style.display = "none";
+         contactUsContent.style.display = "none";
+         contentToShow.style.display = "block";
+      }
+
+      // Event listeners for navigation links
+      contactLink.addEventListener("click", (e) => {
+         e.preventDefault();
+         showContent(contactUsContent);
+      });
+
+      dashboardLink.addEventListener("click", (e) => {
+         e.preventDefault();
+         showContent(dashboardContent);
+      });
+
+      activityLink.addEventListener("click", (e) => {
+         e.preventDefault();
+         showContent(Activity);
+         showSection('chooseActivity');
+      });
+
+      markAttendanceLink.addEventListener("click", (e) => {
+         e.preventDefault();
+         showContent(Activity);
+         showSection('markAttendance');
+      });
+
+      viewAttendanceLink.addEventListener("click", (e) => {
+         e.preventDefault();
+         showContent(Activity);
+         showSection('viewAttendance');
+      });
+
+      // Show dashboard by default
+      showContent(dashboardContent);
+   });
+</script>
+
+<script>
+   function showSection(sectionId) {
+      document.querySelectorAll('.content').forEach(el => el.classList.add('hidden'));
+      document.getElementById(sectionId).classList.remove('hidden');
+   }
+
+   function allotActivity() {
+      const activity = document.getElementById('activitySelect').value;
+      if (activity) {
+         alert(`Activity '${activity}' has been allotted.`);
+      //   showSection('mainOptions');
+      } else {
+         alert('Please select an activity first.');
+      }
+   }
+</script>
+
+<script src="https://unpkg.com/html5-qrcode/minified/html5-qrcode.min.js"></script>
+<script>
+  // Sidebar Toggle Functionality
+  let sideBar = document.querySelector('.side-bar');
+  let menuBtn = document.getElementById('menu-btn');
+  let closeBtn = document.getElementById('close-btn');
+  let body = document.body;
+  
+  // Toggle Sidebar on Menu Button Click
+  menuBtn?.addEventListener('click', () => {
+     sideBar.classList.toggle('active'); // Show/hide sidebar
+     body.classList.toggle('active'); // Adjust main content
+  });
+  
+  // Close Sidebar on Close Button Click
+  closeBtn?.addEventListener('click', () => {
+     sideBar.classList.remove('active'); // Hide sidebar
+     body.classList.remove('active'); // Reset main content
+  });
+  
+  // Close Sidebar when window is resized (optional, to handle desktop/mobile transitions)
+  window.addEventListener('resize', () => {
+     if (window.innerWidth >= 1200) {
+        sideBar.classList.remove('active');
+        body.classList.remove('active');
+     }
+  });
+
+function startQRScanner() {
+   const qrReader = document.getElementById('qrReader');
+   qrReader.classList.remove('hidden');
+
+   const html5QrCode = new Html5Qrcode("qrReader");
+   const config = { fps: 10, qrbox: { width: 250, height: 250 } };
+
+   html5QrCode.start(
+         { facingMode: "environment" },
+         config,
+         onScanSuccess
+   ).catch(err => {
+         console.error(`QR Code scanning failed: ${err}`);
+         alert("Failed to start QR scanner. Please make sure you've granted camera permissions.");
+   });
+}
+
+   function onScanSuccess(decodedText, decodedResult) {
+      const resultElement = document.getElementById('qr-reader-results');
+      
+      // Parse the decodedText
+      const prnMatch = decodedText.match(/PRN:\s*(\S+)/);
+      const nameMatch = decodedText.match(/Name:\s*(\S+\s+\S+)/);
+      const activityMatch = decodedText.match(/Activity:\s*(\S+)/);
+      
+      if (prnMatch && activityMatch) {
+          const coord_prn = prnMatch[1];
+          const activity = activityMatch[1];
+          const coord_name = nameMatch[1];
+  
+          // Display the results
+          resultElement.innerHTML = `<p>Scanned QR Code - PRN: ${coord_prn}, Activity: ${activity}</p>`;
+          
+          // Send data to the server
+          sendAttendanceData(coord_prn, activity, coord_name);
+          
+          // Stop scanning after successful scan
+          Html5Qrcode.stop();
+          document.getElementById('qrReader').classList.add('hidden');
+      } else {
+          resultElement.innerHTML = "<p>Invalid QR Code format.</p>";
+      }
+  }
+  
+
+  function sendAttendanceData(coord_prn, activity, coord_name) {
+   fetch(`{% url 'mark_attendance' %}`, {  // Change to your actual URL
+       method: 'POST',
+       headers: {
+           'Content-Type': 'application/json',
+           'X-CSRFToken': '{{ csrf_token }}'  // Include CSRF token for Django
+       },
+       body: JSON.stringify({
+           coord_prn: coord_prn,
+           activity: activity,
+           coord_name: coord_name
+       })
+   })
+   .then(response => {
+       if (response.ok) {
+           alert('Attendance marked successfully!');
+       } else {
+           alert('Failed to mark attendance.');
+       }
+   })
+   .catch(error => {
+       console.error('Error:', error);
+   });
+}
+
+</script>
+
+<script>
+   const video = document.getElementById('video');
+   const canvas = document.getElementById('canvas');
+   const captureBtn = document.getElementById('capture-btn');
+   const photo = document.getElementById('photo');
+   const coordinates = document.getElementById('coordinates');
+
+   // Access the camera
+   navigator.mediaDevices.getUserMedia({ video: true })
+       .then(stream => {
+           video.srcObject = stream;
+       })
+       .catch(err => {
+           console.error('Error accessing camera: ', err);
+       });
+
+   captureBtn.addEventListener('click', () => {
+       canvas.width = video.videoWidth;
+       canvas.height = video.videoHeight;
+       const context = canvas.getContext('2d');
+       context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+       if (navigator.geolocation) {
+           navigator.geolocation.getCurrentPosition(position => {
+               const lat = position.coords.latitude;
+               const lon = position.coords.longitude;
+
+               // Draw the geolocation on the image
+               context.font = '20px Arial';
+               context.fillStyle = 'yellow';
+               context.fillText(`Lat: ${lat.toFixed(6)}`, 10, canvas.height - 60);
+               context.fillText(`Lon: ${lon.toFixed(6)}`, 10, canvas.height - 30);
+
+               // Convert the canvas to a data URL and display the image
+               const imageDataUrl = canvas.toDataURL('image/png');
+               photo.src = imageDataUrl;
+
+               // Store the coordinates in hidden fields
+               document.getElementById('actual_latitude').value = lat;
+               document.getElementById('actual_longitude').value = lon;
+
+           }, err => {
+               console.error('Error getting location: ', err);
+               coordinates.innerText = 'Could not retrieve location';
+           });
+       } else {
+           coordinates.innerText = 'Geolocation is not supported by your browser';
+       }
+   });
+
+   document.getElementById('attendanceForm').onsubmit = function(event) {
+       event.preventDefault(); // Prevent default form submission
+
+       const formData = new FormData(this);
+       const canvas = document.getElementById('canvas');
+
+       // Convert the canvas to a Blob and append to the FormData
+       canvas.toBlob(blob => {
+        const currentDate = new Date();
+        // console.log(currentDate);
+           formData.append('geo_photo', blob, `${currentDate}_${`{{volunteer.vname}}`}_${`{{volunteer.prn}}`}.png`);
+           submitForm(formData); // Call the function to submit form data
+       }, 'image/png');
+   };
+
+   function submitForm(formData) {
+       fetch(`{% url 'mark_attendance' %}`, {
+           method: 'POST',
+           body: formData,
+       })
+       .then(response => response.json())
+       .then(data => {
+           alert(data.message || data.error);
+       })
+       .catch(error => {
+           console.error('Error:', error);
+       });
+   }
+</script>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<script>
+    document.getElementById('viewAttendanceTab').addEventListener('click', function() {
+        fetch('/view_attendance/')
+            .then(response => response.json())
+            .then(data => {
+                const attendanceTableBody = document.getElementById('attendanceTableBody');
+                attendanceTableBody.innerHTML = '';  // Clear previous data
+    
+                data.attendance.forEach(entry => {
+                    const row = document.createElement('tr');
+                    const dateCell = document.createElement('td');
+                    const statusCell = document.createElement('td');
+    
+                    dateCell.textContent = entry.date;  // dd-mm-yyyy
+                    statusCell.textContent = entry.status; // Present or Absent
+    
+                    row.appendChild(dateCell);
+                    row.appendChild(statusCell);
+                    attendanceTableBody.appendChild(row);
+                });
+    
+                // Show the attendance section
+                document.getElementById('viewAttendance').classList.remove('hidden');
+            })
+            .catch(error => console.error('Error fetching attendance data:', error));
+    });
+    
+</script>
+  
+</body>
+</html>
