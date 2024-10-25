@@ -4,7 +4,8 @@
    <meta charset="UTF-8">
    <meta http-equiv="X-UA-Compatible" content="IE=edge">
    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-   <title>home</title>
+   <title>Volunteer</title>
+   <link rel="icon" type="image/png" href="https://swd.vit.edu/img/swdlogo3.png">
    <script src="https://unpkg.com/html5-qrcode/minified/html5-qrcode.min.js"></script>
    <!-- font awesome cdn link  -->
    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.2/css/all.min.css">
@@ -133,11 +134,11 @@ form#attendanceForm input[type="text"],
    </div>
 
    <nav class="navbar">
-        <a href="" id="D_content"><i class="fas fa-home"></i><span>home</span></a>
+        <a href="" id="D_content"><i class="fas fa-home"></i><span>Home</span></a>
         <a href="#" id="activityLink"><i class="fas fa-tasks"></i><span>Activity</span></a>
         <a href="#" id="markAttendanceLink"><i class="fas fa-clipboard-check"></i><span>Mark Attendance</span></a>
         <a href="#" id="viewAttendanceLink"><i class="fas fa-eye"></i><span>View Attendance</span></a>
-        <a id="contactLink" href="contact.html"><i class="fas fa-headset"></i><span>contact us</span></a>
+        <a id="contactLink" href="contact.html"><i class="fas fa-headset"></i><span>Contact us</span></a>
         <form id="logoutForm" method="POST" action="{% url 'logout_view' %}">
          {% csrf_token %}
          <button type="submit" id="logoutButton" class="logout-btn">
