@@ -68,7 +68,7 @@ class MarkAttendanceView(LoginRequiredMixin, View):
                 in_time_window_end = (datetime.combine(today, activity.start_time) + timedelta(minutes=40)).time()
 
                 out_time_window_start = (datetime.combine(today, activity.end_time) - timedelta(minutes=10)).time()
-                out_time_window_end = (datetime.combine(today, activity.end_time) + timedelta(minutes=40)).time()
+                out_time_window_end = (datetime.combine(today, activity.end_time) + timedelta(minutes=20)).time()
 
                 if not activity.isOnline:
                     # Calculate distance
