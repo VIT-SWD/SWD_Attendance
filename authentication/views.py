@@ -65,7 +65,7 @@ def signup_view(request):
         key = request.POST.get('key')
         gender = request.POST.get('gender')
         department = request.POST.get('department')
-        div = request.POST.get('div')
+        div = request.POST.get('div').upper()
         prn = request.POST.get('prn')
         contact = request.POST.get('contact')
         blood_group = request.POST.get('blood_group')
@@ -88,6 +88,7 @@ def signup_view(request):
         elif key == settings.VOLUNTEER_KEY and year in settings.VOLUNTEER_YEAR:
             role = 'Volunteer'
         else:
+            role = None
             errors['key'] = "Enter a valid secret key for your role."
 
         if not prn.isdigit() or len(prn) != 8:
@@ -95,6 +96,10 @@ def signup_view(request):
 
         if len(div) != 1 or not div.isalpha():
             errors['div'] = "Division must be a single character."
+        else:
+            vol_domain = department + '-' + div
+            if vol_domain not in settings.DOMAIN_ALLOTMENT.keys():
+                errors['div'] = "Your division hasn't been allotted a domain yet."
 
         if not contact.isdigit() or len(contact) != 10:
             errors['contact'] = "Contact number must be 10 digits."
@@ -113,6 +118,9 @@ def signup_view(request):
         for field in required_fields:
             if not request.POST.get(field):
                 errors[field] = "This field is required."
+        
+        if User.objects.filter(username=email).exists():
+            errors['email'] = "Email already in use."
 
         if errors:
             return render(request, 'login.html', {'errors': errors, 'form_data': request.POST, 'active_tab': 'signup'})

@@ -280,17 +280,17 @@
                 <i class="fas fa-building icon-left drop-icon"></i>
                 <select name="department" required style="margin-left: 4rem;">
                     <option value="" disabled {% if not form_data.department %}selected{% endif %}>Select Department</option>
-                    <option value="AIDS" {% if form_data.department == 'AIDS' %}selected{% endif %}>Artificial Intelligence & Data Science</option>
-                    <option value="Civil" {% if form_data.department == 'Civil' %}selected{% endif %}>Civil Engineering</option>
-                    <option value="CE" {% if form_data.department == 'CE' %}selected{% endif %}>Computer Engineering</option>
-                    <option value="CE-SE" {% if form_data.department == 'CE-SE' %}selected{% endif %}>CE - Software Engineering</option>
-                    <option value="CSE-AIML" {% if form_data.department == 'CSE-AIML' %}selected{% endif %}>CSE - AI & ML</option>
-                    <option value="CSE-AI" {% if form_data.department == 'CSE-AI' %}selected{% endif %}>CSE - Artificial Intelligence</option>
-                    <option value="CSE-DS" {% if form_data.department == 'CSE-DS' %}selected{% endif %}>CSE - Data Science</option>
-                    <option value="CSE-ICS" {% if form_data.department == 'CSE-ICS' %}selected{% endif %}>CSE - IoT & Cyber Security</option>
-                    <option value="ETC" {% if form_data.department == 'ETC' %}selected{% endif %}>Electronics & Telecommunication</option>
+                    <option value="CSAIDS" {% if form_data.department == 'CSAIDS' %}selected{% endif %}>Artificial Intelligence & Data Science</option>
+                    <option value="CV" {% if form_data.department == 'CV' %}selected{% endif %}>Civil Engineering</option>
+                    <option value="CS" {% if form_data.department == 'CS' %}selected{% endif %}>Computer Engineering</option>
+                    <option value="CSSE" {% if form_data.department == 'CSSE' %}selected{% endif %}>CS - Software Engineering</option>
+                    <option value="CSAIML" {% if form_data.department == 'CSAIML' %}selected{% endif %}>CS - AI & ML</option>
+                    <option value="CSAI" {% if form_data.department == 'CSAI' %}selected{% endif %}>CS - Artificial Intelligence</option>
+                    <option value="CSDS" {% if form_data.department == 'CSDS' %}selected{% endif %}>CS - Data Science</option>
+                    <option value="CSCBI" {% if form_data.department == 'CSCBI' %}selected{% endif %}>CS - Cyber Security & IoT</option>
+                    <option value="ET" {% if form_data.department == 'ET' %}selected{% endif %}>Electronics & Telecommunication</option>
                     <option value="IT" {% if form_data.department == 'IT' %}selected{% endif %}>Information Technology</option>
-                    <option value="ICE" {% if form_data.department == 'ICE' %}selected{% endif %}>Instrumentation & Control Engineering</option>
+                    <option value="IC" {% if form_data.department == 'IC' %}selected{% endif %}>Instrumentation & Control Engineering</option>
                     <option value="ME" {% if form_data.department == 'ME' %}selected{% endif %}>Mechanical Engineering</option>
                 </select>
                 {% if errors.department %}
@@ -299,8 +299,7 @@
             </div>
             <div class="input-group">
                 <i class="fas fa-id-badge icon-left text-icon"></i>
-                <input type="text" name="div" placeholder="Division" value="{{ form_data.div }}" required style="text-transform: uppercase;">
-
+                <input type="text" name="div" placeholder="Division" value="{{ form_data.div }}" required>
                 {% if errors.div %}
                     <small class="error">{{ errors.div }}</small>
                 {% endif %}
