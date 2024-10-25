@@ -171,10 +171,14 @@ form#attendanceForm input[type="text"],
                 <form method="POST" action="{% url 'allotactivity' %}">
                     {% csrf_token %}
                     <select id="activitySelect" class="activity-select" name="activity" required>
-                        <option value="">Select an activity</option>
-                        <option value="workshop">Workshop</option>
-                        <option value="seminar">Seminar</option>
-                        <option value="meetup">Meetup</option>
+                        {% if activities %}
+                            <option value="">Select an activity</option>
+                            {% for activity in activities %}
+                                <option value="{{ activity }}">{{ activity }}</option>
+                            {% endfor %}
+                        {% else %}
+                            <option value="">No activities available</option>
+                        {% endif %}
                     </select>
                     <button class="dashboard-btn" type="submit">Allot Activity</button>
                 </form>
@@ -284,10 +288,21 @@ form#attendanceForm input[type="text"],
         <video id="video" autoplay></video>
         <canvas id="canvas" style="display:none;"></canvas><br><br>
         <button type="button" id="capture-btn" style="cursor: pointer;">Take Photo</button><br>
-        <img id="photo" alt="Your captured photo will appear here" style="display: block; margin: 20px auto; max-width: 75%; align-items:center;"/>
+        <img id="photo" alt="Your captured photo will appear here" style="display: block; margin: 20px auto; max-width: 100%; align-items:center;"/>
         <input type="hidden" id="geo_photo" name="geo_photo">
         <input type="hidden" id="actual_latitude" name="actual_latitude">
         <input type="hidden" id="actual_longitude" name="actual_longitude">
+
+        <select id="activitySelect" class="activity-select" name="venue" required>
+            {% if events %}
+                <option value="">Select Venue</option>
+                {% for event in events %}
+                    <option value="{{ event.venue }}">{{ event.venue }}</option>
+                {% endfor %}
+            {% else %}
+                <option value="">No venues available</option>
+            {% endif %}
+        </select>
         
         <button type="submit" style="cursor: pointer;">Submit Attendance</button>
     </form>
@@ -313,25 +328,25 @@ form#attendanceForm input[type="text"],
    <div id="contactUsContent" class="content-section" style="display: none;">
       <section class="contact">
           <div  id="how" class="box-container" style="padding-top: 10%;">
-              <div class="box">
-                  <i class="fas fa-phone"></i>
-                  <h3>Phone Number</h3>
-                  <a href="tel:1234567890">+91 80108 971017</a>
-                  <a href="tel:1112223333">+91 91681 51957</a>
-              </div>
+            <div class="box">
+                <i class="fas fa-phone"></i>
+                <h3>Phone Number</h3>
+                <a href="tel:8010897017">+91 80108 971017</a>
+                <a href="tel:9168151957">+91 91681 51957</a>
+            </div>
 
-              <div class="box">
-                  <i class="fas fa-envelope"></i>
-                  <h3>Email Address</h3>
-                  <a href="mailto:DJDGIFNGNI@gmail.com">vitswd@vit.edu</a>
-                  {% comment %} <a href="mailto:JDGSNKFD@gmail.com">JFSHGUIHFS@gmail.com</a> {% endcomment %}
-              </div>
+            <div class="box">
+                <i class="fas fa-map-marker-alt"></i>
+                <h3>Office Address</h3>
+                <a href="https://www.google.com/maps/dir//Vishwakarma+Institute+of+Technology+(VIT),+VISHWAKARMA+INSTITUTE+OF+TECHNOLOGY+VIT,+Bibwewadi,+Pune,+Maharashtra+411037/data=!4m6!4m5!1m1!4e2!1m2!1m1!1s0x3bc2ea950f616219:0x321bdae2cea9f064?sa=X&ved=1t:57443&ictx=111">VISHWAKARMA INSTITUTE OF TECHNOLOGY VIT, Upper Indira Nagar, Bibwewadi, Pune, Maharashtra 411037</a>
+            </div>
 
-              <div class="box">
-                  <i class="fas fa-map-marker-alt"></i>
-                  <h3>Office Address</h3>
-                  <a href="#">VISHWAKARMA INSTITUTE OF TECHNOLOGY VIT, Upper Indira Nagar, Bibwewadi, Pune, Maharashtra 411037</a>
-              </div>
+            <div class="box">
+                <i class="fas fa-envelope"></i>
+                <h3>Email Address</h3>
+                <a href="mailto:vitswd@vit.edu">vitswd@vit.edu</a>
+                {% comment %} <a href="mailto:JDGSNKFD@gmail.com">JFSHGUIHFS@gmail.com</a> {% endcomment %}
+            </div>
           </div>
       </section>
    </div>
@@ -572,7 +587,14 @@ function startQRScanner() {
 
        // Convert the canvas to a Blob and append to the FormData
        canvas.toBlob(blob => {
-           formData.append('geo_photo', blob, 'photo.png');
+        // ${Date.now()}
+        const currentDate = new Date();
+        const year = currentDate.getFullYear();
+        const month = String(currentDate.getMonth() + 1).padStart(2, '0'); // Months are zero-indexed
+        const day = String(currentDate.getDate()).padStart(2, '0');
+        const readableDate = `${day}-${month}-${year}`; 
+        
+           formData.append('geo_photo', blob, `${readableDateTime}_${`{{volunteer.vname}}`}_${`{{volunteer.prn}}`}.png`);
            submitForm(formData); // Call the function to submit form data
        }, 'image/png');
    };

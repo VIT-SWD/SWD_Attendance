@@ -814,6 +814,7 @@ section{
    }
 
 }
+
 .logout-btn {
    background-color: #ff6b6b;
    color: white;
@@ -826,15 +827,14 @@ section{
    cursor: pointer;
    transition: all 0.3s ease-in-out;
 }
+
 /* Style the logout button */
 .logout-btn {
    background-color: #ff6b6b;
    color: white;
-  position:relative;
-  top: 400px;
-  left: 80px;
-  margin: 20px auto;
-   border: none; 
+   position: fixed;
+   margin: 20px auto;
+   border: none;
    padding: 12px 20px;
    border-radius: 10px;
    font-size: 16px;
@@ -854,10 +854,9 @@ section{
    padding: 20px 10px;
    width: 100px;
    text-align: center;
-   position: relative;
-   top: 180px;
-
-
+   position: absolute;
+   top: 85%;
+   left: 30%;
 }
 /* Notification style */
 .notification {

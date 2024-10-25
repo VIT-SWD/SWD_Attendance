@@ -10,8 +10,18 @@ from django.conf import settings
 
 @login_required(login_url='userlogin')
 def coordinator(request):
+    socialServices = []
+    flagships = []
+
+    for activity in settings.ACTIVITIES.keys():
+        if settings.ACTIVITIES[activity]:
+            if activity in settings.FLAGSHIPS:
+                flagships.append(activity)
+            else:
+                socialServices.append(activity)
+
     coordinator = Coordinator.objects.get(user=request.user)
-    return render(request, 'coordinators.html', {'coordinator': coordinator, 'CURR_YEAR': settings.CURR_YEAR, 'CURR_SEM': settings.CURR_SEM})
+    return render(request, 'coordinators.html', {'coordinator': coordinator, 'CURR_YEAR': settings.CURR_YEAR, 'CURR_SEM': settings.CURR_SEM, 'socialServices': socialServices, 'flagships': flagships})
 
 @login_required(login_url='userlogin')
 def generate_and_save_qr(request):    

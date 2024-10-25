@@ -10,9 +10,9 @@ from volunteer import views as v_views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', views.home, name="home"),  
-    path('profile/', views.profile, name="profile"),      
-    path('update/', views.update, name="update"),    
+    path('', views.home, name="home"),
+    path('profile/', views.profile, name="profile"),
+    path('update/', views.update, name="update"),
     path('update_profile/', views.update_profile, name="update_profile"),    
     path('coordinator/', include('coordinator.urls')),
     path('userlogin/', include('authentication.urls')),

@@ -26,7 +26,7 @@ SECRET_KEY = 'django-insecure-f7!_bb*67rwd-)&7=zbz%jxhb*ftci6adg$)lue4g7ms0ebf8+
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["*"]
+ALLOWED_HOSTS = ['*']
 
 # Application definition
 
@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'coordinator',
     'secretary',
     'volunteer',
+    'action'
 ]
 
 MIDDLEWARE = [
@@ -129,5 +130,105 @@ MEDIA_ROOT = os.path.join(BASE_DIR, "static")
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+# Custom settings
 CURR_YEAR = '2024-2025'
 CURR_SEM = 1
+SECRETARY_YEAR = ['22', '23']
+COORDINATOR_YEAR = ['22', '23']
+VOLUNTEER_YEAR = ['24']
+
+SECRETARY_KEY = 'Z4Q8L9'
+COORDINATOR_KEY = 'F3N1X7'
+VOLUNTEER_KEY = 'P5T2B6'
+
+# Domain Allotment
+DOMAIN_ALLOTMENT = {
+    "AIDS-A": "Education, Awareness and Empowerment",
+    "AIDS-B": "Education, Awareness and Empowerment",
+    "AIDS-C": "Education, Awareness and Empowerment",
+    "AIDS-D": "Education, Awareness and Empowerment",
+    "AIDS-E": "Education, Awareness and Empowerment",
+    "AIDS-F": "Education, Awareness and Empowerment",
+    "Civil-A": "Education, Awareness and Empowerment",
+    "CE-A": "Education, Awareness and Empowerment",
+    "CE-B": "Education, Awareness and Empowerment",
+    "CE-C": "Education, Awareness and Empowerment",
+    "CE-D": "Education, Awareness and Empowerment",
+    "CE-E": "Education, Awareness and Empowerment",
+    "CE-F": "Education, Awareness and Empowerment",
+    "CE-G": "Education, Awareness and Empowerment",
+    "CE-H": "Education, Awareness and Empowerment",
+    "CE-I": "Health and Wellbeing",
+    "CE-J": "Health and Wellbeing",
+    "CE-K": "Health and Wellbeing",
+    "CE-L": "Health and Wellbeing",
+    "CE-SE-A": "Health and Wellbeing",
+    "CE-SE-B": "Health and Wellbeing",
+    "CE-SE-C": "Health and Wellbeing",
+    "CSE-AIML-A": "Health and Wellbeing",
+    "CSE-AIML-B": "Health and Wellbeing",
+    "CSE-AIML-C": "Health and Wellbeing",
+    "CSE-AIML-D": "Health and Wellbeing",
+    "CSE-AIML-E": "Health and Wellbeing",
+    "CSE-AIML-F": "Health and Wellbeing",
+    "CSE-AI-A": "Health and Wellbeing",
+    "CSE-AI-B": "Health and Wellbeing",
+    "CSE-AI-C": "Community Development and Social Support",
+    "CSE-AI-D": "Community Development and Social Support",
+    "CSE-AI-E": "Community Development and Social Support",
+    "CSE-AI-F": "Community Development and Social Support",
+    "CSE-DS-A": "Community Development and Social Support",
+    "CSE-DS-B": "Community Development and Social Support",
+    "CSE-DS-C": "Community Development and Social Support",
+    "CSE-ICS-A": "Community Development and Social Support",
+    "CSE-ICS-B": "Community Development and Social Support",
+    "CSE-ICS-C": "Community Development and Social Support",
+    "ETC-A": "Community Development and Social Support",
+    "ETC-B": "Community Development and Social Support",
+    "ETC-C": "Community Development and Social Support",
+    "ETC-D": "Community Development and Social Support",
+    "ETC-E": "Community Development and Social Support",
+    "ETC-F": "Environmental Sustainability and Cleanliness",
+    "IT-A": "Environmental Sustainability and Cleanliness",
+    "IT-B": "Environmental Sustainability and Cleanliness",
+    "IT-C": "Environmental Sustainability and Cleanliness",
+    "IT-D": "Environmental Sustainability and Cleanliness",
+    "IT-E": "Environmental Sustainability and Cleanliness",
+    "IT-F": "Environmental Sustainability and Cleanliness",
+    "ICE-A": "Environmental Sustainability and Cleanliness",
+    "ICE-B": "Environmental Sustainability and Cleanliness",
+    "ICE-C": "Environmental Sustainability and Cleanliness",
+    "ME-A": "Environmental Sustainability and Cleanliness",
+    "ME-B": "Environmental Sustainability and Cleanliness",
+    "ME-C": "Environmental Sustainability and Cleanliness",
+    "ME-D": "Environmental Sustainability and Cleanliness",
+    "ME-E": "Environmental Sustainability and Cleanliness",
+    "ME-F": "Environmental Sustainability and Cleanliness"
+}
+
+# Activity Domains
+DOMAINS = {
+    "Education, Awareness and Empowerment": ["Aavishkar", "Matadhikar", "Muskaan", "Udaan", "Utkarsh"],
+    "Health and Wellbeing": ["Blood-D", "Saarthi", "Saksham", "Vatsalya"],
+    "Community Development and Social Support": ["Night Patrolling", "Animal Welfare"],
+    "Environmental Sustainability and Cleanliness": ["Swaccha Pune", "Go Green"],
+}
+
+#Activity Status
+ACTIVITIES = {
+    "Aavishkar": False,
+    "Matadhikar": True,
+    "Muskaan": False,
+    "Udaan": False,
+    "Utkarsh": False,
+    "Blood-D": True,
+    "Saarthi": False,
+    "Saksham": False,
+    "Vatsalya": False,
+    "Night Patrolling": False,
+    "Animal Welfare": False,
+    "Swaccha Pune": False,
+    "Go Green": False
+}
+
+FLAGSHIPS = ["Blood-D", "Utkarsh"]

@@ -4,9 +4,20 @@ import requests, openpyxl, re
 from authentication.models import Activity, Secretary, Volunteer
 from django.contrib.auth.decorators import login_required
 from django.conf import settings
+from datetime import datetime
 
 @login_required(login_url='userlogin')
 def secretaryView(request):
+    socialServices = []
+    flagships = []
+
+    for activity in settings.ACTIVITIES.keys():
+        if settings.ACTIVITIES[activity]:
+            if activity in settings.FLAGSHIPS:
+                flagships.append(activity)
+            else:
+                socialServices.append(activity)
+
     if request.method == 'POST':
         secretary = get_object_or_404(Secretary, user=request.user)
         if request.POST.get('activity'):
@@ -18,21 +29,26 @@ def secretaryView(request):
         secretary.save()
     else:
         secretary = get_object_or_404(Secretary, user=request.user)
-    print(settings.CURR_YEAR, settings.CURR_SEM)
-    return render(request, 'secretary.html', {'secretary': secretary, 'CURR_YEAR': settings.CURR_YEAR, 'CURR_SEM': settings.CURR_SEM})
+    # print(settings.CURR_YEAR, settings.CURR_SEM)
+    return render(request, 'secretary.html', {'secretary': secretary, 'CURR_YEAR': settings.CURR_YEAR, 'CURR_SEM': settings.CURR_SEM, 'socialServices': socialServices, 'flagships': flagships})
 
 @login_required(login_url='userlogin')
 def add_activity(request):
     if request.method == 'POST':
         activity = request.POST.get('activity')
-        eventDate = request.POST.get('event-date')
+        date_str = request.POST.get('event-date')
+        eventDate = datetime.strptime(date_str, '%Y-%m-%d').date()
         startTime = request.POST.get('start-time')
         endTime = request.POST.get('end-time')
         map_link = request.POST.get('map-link')
         description = request.POST.get('description')
+        mode = request.POST.get('mode')
+        venue = request.POST.get('venue')
+        # print(eventDate)
 
         # Extract coordinates from the map_link using regex
         coordinates = extract_coordinates(map_link)
+        # print(coordinates)
         if coordinates:
             latitude, longitude = coordinates
             print(f"Latitude: {latitude}, Longitude: {longitude}")
@@ -49,23 +65,25 @@ def add_activity(request):
             map_link=map_link,
             description=description,
             latitude=float(latitude) if latitude else None,  
-            longitude=float(longitude) if longitude else None 
+            longitude=float(longitude) if longitude else None,
+            isOnline = True if mode == 'online' else False,
+            venue = venue
         )
         new_activity.save()
 
         volunteers = Volunteer.objects.filter(activity=activity)
         for volunteer in volunteers:
-            volunteer.attendance += f"#{eventDate.strftime('%d-%m-%Y')}"
+            volunteer.attendance += f"#{eventDate.strftime('%d-%m-%Y')}" + ", "
             volunteer.save()
 
         return redirect('secretary')
 
     return redirect('secretary')
 
-@login_required(login_url='userlogin')
+# @login_required(login_url='userlogin')
 def extract_coordinates(url):
     regex = r'@?([-+]?[\d.]+),([-+]?[\d.]+)'
-    expanded_url = expand_url(url)  
+    expanded_url = expand_url(url)
     print(f"Expanded URL: {expanded_url}") 
     matches = re.search(regex, expanded_url)
 
@@ -105,13 +123,13 @@ def download_attendance(request):
         #         all_dates.add(date)
         
         # sorted_dates = sorted(all_dates, key=lambda x: x) 
-        all_dates = set()
+        all_dates = []
         for volunteer in volunteers:
             attendance_dates = volunteer.attendance.split(', ')
             for date_entry in attendance_dates:
                 if len(date_entry) > 1:  # Ensure the entry is not empty and valid
                     date = date_entry[1:]  # Extract the date, assuming it starts with a special character
-                    all_dates.add(date)
+                    all_dates.append(date)
 
         sorted_dates = sorted(all_dates, key=lambda x: x)
         headers.extend(sorted_dates)  
@@ -143,5 +161,3 @@ def download_attendance(request):
         return response
     else:
         return HttpResponse("Invalid request method.", status=400)
-
-    

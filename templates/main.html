@@ -268,19 +268,19 @@
 
 <body>
     <div class="container">
-        <h1 id="greeting">Welcome to SW&D</h1>
+        <h1 style="font-size:40px" id="greeting">Welcome to SW&D Committee<br>Smart Attendance System</h1>
         <div class="box-container">
-            <div class="box" id="coordinator-box" onclick="showModal('coordinator')">
+            <div class="box" id="coordinator-box" onclick="showModal('volunteer')">
                 <div class="box-content">
                     <a href="{% url 'userlogin' %}">
-                        <h3>Coordinators</h3>
+                        <h3>Volunteer</h3>
                     </a>
                 </div>
             </div>
-            <div class="box" id="volunteer-box" onclick="showModal('volunteer')">
+            <div class="box" id="volunteer-box" onclick="showModal('coordinator')">
                 <div class="box-content">
                     <a href="{% url 'userlogin'%}">
-                        <h3>Volunteers</h3>
+                        <h3>Coordinator</h3>
                     </a>
                 </div>
             </div>

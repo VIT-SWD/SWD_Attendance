@@ -7,6 +7,7 @@ from django.contrib import messages
 from django.contrib.auth.models import User
 from .models import Volunteer, Coordinator, Secretary
 import re
+from django.conf import settings
 
 def logout_view(request):
     logout(request)
@@ -14,15 +15,17 @@ def logout_view(request):
 
 def role_based_login(request):
     if request.method == 'POST':
-        email = request.POST.get('email')  
+        email = request.POST.get('email')
         password = request.POST.get('password')
 
         try:
-            user = User.objects.get(email=email)
+            user = User.objects.get(username=email)
 
             user = authenticate(request, username=email, password=password)
+            # print(user)
         except User.DoesNotExist:
             user = None
+            # print("No user")
 
         if user is not None:
             auth_login(request, user)  # Log in the user
@@ -59,7 +62,7 @@ def signup_view(request):
         form_data = request.POST
         name = request.POST.get('username')
         email = request.POST.get('email')
-        role = request.POST.get('role')
+        key = request.POST.get('key')
         gender = request.POST.get('gender')
         department = request.POST.get('department')
         div = request.POST.get('div')
@@ -68,11 +71,24 @@ def signup_view(request):
         blood_group = request.POST.get('blood_group')
         password1 = request.POST.get('password1')
         password2 = request.POST.get('password2')
+        year = email.split('@')[0][-3:-1] if email.split('@')[0][-3:].isdigit() else email.split('@')[0][-2:]
 
         try:
             validate_email(email)
         except ValidationError:
             errors['email'] = "Invalid email format."
+        
+        if email.split('@')[1] != 'vit.edu':
+            errors['email'] = "Email must be a VIT email."
+
+        if key == settings.SECRETARY_KEY and year in settings.SECRETARY_YEAR:
+            role = 'Secretary'
+        elif key == settings.COORDINATOR_KEY and year in settings.COORDINATOR_YEAR:
+            role = 'Coordinator'
+        elif key == settings.VOLUNTEER_KEY and year in settings.VOLUNTEER_YEAR:
+            role = 'Volunteer'
+        else:
+            errors['key'] = "Enter a valid secret key for your role."
 
         if not prn.isdigit() or len(prn) != 8:
             errors['prn'] = "PRN must be 8 digits."
@@ -93,7 +109,7 @@ def signup_view(request):
                                     "and include at least one uppercase letter, "
                                     "one lowercase letter, one digit, and one special character.")
 
-        required_fields = ['username', 'email', 'role', 'gender', 'department', 'div', 'prn', 'contact', 'blood_group', 'password1', 'password2']
+        required_fields = ['username', 'email', 'key', 'gender', 'department', 'div', 'prn', 'contact', 'blood_group', 'password1', 'password2']
         for field in required_fields:
             if not request.POST.get(field):
                 errors[field] = "This field is required."
@@ -116,8 +132,9 @@ def signup_view(request):
                 prn=prn,
                 contact_num=contact,
                 blood_group=blood_group,
-                registered_academic_year='2021-2022',
-                registered_semester=2
+                registered_academic_year=settings.CURR_YEAR,
+                registered_semester=settings.CURR_SEM,
+                domain=settings.DOMAIN_ALLOTMENT[department+'-'+div]
             )
         elif role == 'Coordinator':
             Coordinator.objects.create(
@@ -130,8 +147,8 @@ def signup_view(request):
                 prn=prn,
                 contact_num=contact,
                 blood_group=blood_group,
-                registered_academic_year='2021-2022',
-                registered_semester=2
+                registered_academic_year=settings.CURR_YEAR,
+                registered_semester=settings.CURR_SEM
             )
         elif role == 'Secretary':
             Secretary.objects.create(
@@ -144,8 +161,8 @@ def signup_view(request):
                 prn=prn,
                 contact_num=contact,
                 blood_group=blood_group,
-                registered_academic_year='2021-2022',
-                registered_semester=2
+                registered_academic_year=settings.CURR_YEAR,
+                registered_semester=settings.CURR_SEM
             )
         else:
             messages.error(request, "Invalid role selected.")

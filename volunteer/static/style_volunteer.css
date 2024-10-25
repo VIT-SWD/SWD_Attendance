@@ -254,14 +254,6 @@ body {
   #how{
    box-shadow: none;
   }
-  #logoutButton {
-      padding: 20px 10px;
-      width: 100px;
-      text-align: center;
-      position: relative;
-      top: 80px;
-
-  }
   .dashboard-item {
       margin-bottom: 20px;
   }

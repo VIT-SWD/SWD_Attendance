@@ -241,6 +241,11 @@
             margin-top: 20px;
         }
         
+        p{
+            font-size:14px
+        }
+        
+
         @media screen and (max-width: 768px) {
             .container {
                 padding: 15px;
@@ -285,6 +290,17 @@
         
         #how{
             box-shadow: none;
+        }
+
+        .button{
+            font-size: 14px
+        }
+
+        img
+        {
+            max-width: 60%;
+            max-height: 60%;
+
         }
     </style>
 
@@ -349,7 +365,7 @@
             <a href="contact.html" id="contact"><i class="fas fa-headset"></i><span>Contact us</span></a>
             <form id="logoutForm" method="POST" action="{% url 'logout_view' %}">
                 {% csrf_token %}
-                <button type="submit" id="logoutButton" class="logout-btn">
+                <button type="submit" id="logoutButton" class="logout-btn style" style="position: absolute; top: 85%; left: 30%;">
                     <i class="fas fa-sign-out-alt" style="margin-right: 8px;"></i> Logout
                 </button>
             </form>
@@ -365,22 +381,26 @@
             <div id="dashboardContent">
                 <div class="D-container container" id="D-container">
                     <h1 style="font-size: 19px; font-weight: bold;"  >Welcome To SW&D's Smart Attendance System</h1>
-                    <p style="font-size: 14px;">WE WORK FOR THE BETTERMENT<br>OF THE SOCIETY</p>
+                    <p style="font-size: 14px;">We work for the betterment<br>of the society</p>
                 </div>
             </div>
 
             <!-- Activity -->
-            <div class="container" id="Activity" >
+            <div class="container" id="Activity" style=" text-align: center;margin-top: 2%;" >
                 <h1>Choose Social Services</h1>
                 {% if coordinator.registered_academic_year == CURR_YEAR and coordinator.registered_semester == CURR_SEM %}
                     {% if not coordinator.qr_codeSS %}
                     <form method="POST" action="{% url 'generate_qr' %}">
                         {% csrf_token %}
                         <select name="activity" id="activitySelec" required>
-                            <option value="">Select an activity</option>
-                            <option value="workshop">Workshop</option>
-                            <option value="seminar">Seminar</option>
-                            <option value="meetup">Meetup</option>
+                            {% if socialServices %}
+                                <option value="">Select an activity</option>
+                                {% for activity in socialServices %}
+                                    <option value="{{ activity }}">{{ activity }}</option>
+                                {% endfor %}
+                            {% else %}
+                                <option value="">No activities available</option>
+                            {% endif %}
                         </select>
                         
                         <button type="submit">Generate QR Code</button>
@@ -403,10 +423,14 @@
                     <form method="POST" action="{% url 'generate_qr' %}">
                         {% csrf_token %}
                         <select name="flagship" id="activitySelec" required>
-                            <option value="">Select an activity</option>
-                            <option value="workshop">Workshop</option>
-                            <option value="seminar">Seminar</option>
-                            <option value="meetup">Meetup</option>
+                            {% if flagships %}
+                                <option value="">Select an activity</option>
+                                {% for activity in flagships %}
+                                    <option value="{{ activity }}">{{ activity }}</option>
+                                {% endfor %}
+                            {% else %}
+                                <option value="">No activities available</option>
+                            {% endif %}
                         </select>
                         
                         <button type="submit">Generate QR Code</button>
@@ -450,59 +474,32 @@
             <!-- Contact Us Section -->
             <div id="contactUsContent" class="content-section" style="display: none;">
                 <section class="contact">
-                    <div  id="how" class="box-container" style="padding-top: 10%;">
+                    <div id="how" class="box-container" style="padding-top: 5%;">
                         <div class="box">
                             <i class="fas fa-phone"></i>
                             <h3>Phone Number</h3>
-                            <a href="tel:1234567890">+91 80108 971017</a>
-                            <a href="tel:1112223333">+91 91681 51957</a>
+                            <a href="tel:8010897017">+91 80108 971017</a>
+                            <a href="tel:9168151957">+91 91681 51957</a>
                         </div>
           
                         <div class="box">
                             <i class="fas fa-envelope"></i>
                             <h3>Email Address</h3>
-                            <a href="mailto:DJDGIFNGNI@gmail.com">vitswd@vit.edu</a>
+                            <a href="mailto:vitswd@vit.edu">vitswd@vit.edu</a>
                             {% comment %} <a href="mailto:JDGSNKFD@gmail.com">JFSHGUIHFS@gmail.com</a> {% endcomment %}
                         </div>
           
                         <div class="box">
                             <i class="fas fa-map-marker-alt"></i>
                             <h3>Office Address</h3>
-                            <a href="#">VISHWAKARMA INSTITUTE OF TECHNOLOGY VIT, Upper Indira Nagar, Bibwewadi, Pune, Maharashtra 411037</a>
+                            <a href="https://www.google.com/maps/dir//Vishwakarma+Institute+of+Technology+(VIT),+VISHWAKARMA+INSTITUTE+OF+TECHNOLOGY+VIT,+Bibwewadi,+Pune,+Maharashtra+411037/data=!4m6!4m5!1m1!4e2!1m2!1m1!1s0x3bc2ea950f616219:0x321bdae2cea9f064?sa=X&ved=1t:57443&ictx=111">VISHWAKARMA INSTITUTE OF TECHNOLOGY VIT, Upper Indira Nagar, Bibwewadi, Pune, Maharashtra 411037</a>
                         </div>
                     </div>
                 </section>
-             </div><div id="contactUsContent" class="content-section" style="display: none;">
-                <section class="contact">
-                    <div  id="how" class="box-container" style="padding-top: 10%;">
-                        <div class="box">
-                            <i class="fas fa-phone"></i>
-                            <h3>Phone Number</h3>
-                            <a href="tel:1234567890">+91 80108 971017</a>
-                            <a href="tel:1112223333">+91 91681 51957</a>
-                        </div>
-          
-                        <div class="box">
-                            <i class="fas fa-envelope"></i>
-                            <h3>Email Address</h3>
-                            <a href="mailto:DJDGIFNGNI@gmail.com">vitswd@vit.edu</a>
-                            {% comment %} <a href="mailto:JDGSNKFD@gmail.com">JFSHGUIHFS@gmail.com</a> {% endcomment %}
-                        </div>
-          
-                        <div class="box">
-                            <i class="fas fa-map-marker-alt"></i>
-                            <h3>Office Address</h3>
-                            <a href="#">VISHWAKARMA INSTITUTE OF TECHNOLOGY VIT, Upper Indira Nagar, Bibwewadi, Pune, Maharashtra 411037</a>
-                        </div>
-                    </div>
-                </section>
-             </div>
-
+            
             <div id="notification" class="notification">Logged out successfully!</div>
     </section>
     <script>
-
-    
         function resetSelection() {
             document.getElementById('Activity').style.display = 'block';
             document.getElementById('qrCodeSection').style.display = 'none';

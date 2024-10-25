@@ -6,7 +6,7 @@ class Volunteer(models.Model):
     vname = models.CharField(max_length=30)
     email = models.EmailField(max_length=30)
     gender = models.CharField(max_length=10)
-    domain = models.CharField(max_length=30)
+    domain = models.CharField(max_length=50)
     activity = models.CharField(max_length=30, default='')
     dept = models.CharField(max_length=60)
     academic_year = models.CharField(max_length=10, default='FY')
@@ -84,7 +84,9 @@ class Activity(models.Model):
     map_link = models.URLField(max_length=2000, null=True, blank=True) 
     description = models.TextField(blank=True, null=True) 
     latitude = models.FloatField(null=True)            
-    longitude = models.FloatField(null=True)      
+    longitude = models.FloatField(null=True)
+    isOnline = models.BooleanField(default=False)
+    venue = models.CharField(max_length=100, default='')
     def __str__(self):
         return self.name
 
@@ -107,7 +109,6 @@ class Domain(models.Model):
         verbose_name_plural = 'Domains'
         ordering =  ['name']
 
-
 class Attendance(models.Model):
     coord_name = models.CharField(max_length=100, null=True, blank=True)
     coord_prn = models.CharField(max_length=20, null=True, blank=True)
@@ -120,3 +121,4 @@ class Attendance(models.Model):
     activity = models.CharField(max_length=50, null=True)
     attendance = models.CharField(max_length=350, default='')
     marked_IN_attendance = models.BooleanField(default=False)
+    venue = models.CharField(max_length=100, default='')

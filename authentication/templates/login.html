@@ -21,7 +21,7 @@
             padding: 0;
             display: flex;
             justify-content: center;
-            align-items: flex-start; 
+            align-items: center; 
             min-height: 100vh; 
             overflow-x: hidden; 
         }
@@ -244,7 +244,7 @@
                     <small class="error">{{ errors.email }}</small>
                 {% endif %}
             </div>
-            <div class="input-group">
+            <!-- <div class="input-group">
                 <i class="fas fa-user-check icon-left drop-icon"></i>
                 <select name="role" required style="margin-left: 4rem;">
                     <option value="" disabled {% if not form_data.role %}selected{% endif %}>Select Role</option>
@@ -254,6 +254,13 @@
                 </select>
                 {% if errors.role %}
                     <small class="error">{{ errors.role }}</small>
+                {% endif %}
+            </div> -->
+            <div class="input-group">
+                <i class="fas fa-key icon-left text-icon"></i>
+                <input type="text" name="key" placeholder="Role Key" value="{{ form_data.key }}" required>
+                {% if errors.key %}
+                    <small class="error">{{ errors.key }}</small>
                 {% endif %}
             </div>
             <div class="input-group">
@@ -272,10 +279,18 @@
                 <i class="fas fa-building icon-left drop-icon"></i>
                 <select name="department" required style="margin-left: 4rem;">
                     <option value="" disabled {% if not form_data.department %}selected{% endif %}>Select Department</option>
-                    <option value="CSE" {% if form_data.department == 'CSE' %}selected{% endif %}>Computer Science</option>
-                    <option value="ECE" {% if form_data.department == 'ECE' %}selected{% endif %}>Electronics</option>
-                    <option value="ME" {% if form_data.department == 'ME' %}selected{% endif %}>Mechanical</option>
-                    <option value="CE" {% if form_data.department == 'CE' %}selected{% endif %}>Civil</option>
+                    <option value="AIDS" {% if form_data.department == 'AIDS' %}selected{% endif %}>Artificial Intelligence & Data Science</option>
+                    <option value="Civil" {% if form_data.department == 'Civil' %}selected{% endif %}>Civil Engineering</option>
+                    <option value="CE" {% if form_data.department == 'CE' %}selected{% endif %}>Computer Engineering</option>
+                    <option value="CE-SE" {% if form_data.department == 'CE-SE' %}selected{% endif %}>CE - Software Engineering</option>
+                    <option value="CSE-AIML" {% if form_data.department == 'CSE-AIML' %}selected{% endif %}>CSE - AI & ML</option>
+                    <option value="CSE-AI" {% if form_data.department == 'CSE-AI' %}selected{% endif %}>CSE - Artificial Intelligence</option>
+                    <option value="CSE-DS" {% if form_data.department == 'CSE-DS' %}selected{% endif %}>CSE - Data Science</option>
+                    <option value="CSE-ICS" {% if form_data.department == 'CSE-ICS' %}selected{% endif %}>CSE - IoT & Cyber Security</option>
+                    <option value="ETC" {% if form_data.department == 'ETC' %}selected{% endif %}>Electronics & Telecommunication</option>
+                    <option value="IT" {% if form_data.department == 'IT' %}selected{% endif %}>Information Technology</option>
+                    <option value="ICE" {% if form_data.department == 'ICE' %}selected{% endif %}>Instrumentation & Control Engineering</option>
+                    <option value="ME" {% if form_data.department == 'ME' %}selected{% endif %}>Mechanical Engineering</option>
                 </select>
                 {% if errors.department %}
                     <small class="error">{{ errors.department }}</small>

@@ -9,11 +9,19 @@ from django.utils.decorators import method_decorator
 from authentication.models import Attendance, Activity
 from datetime import datetime, timedelta
 from django.conf import settings
+import math
+import geopy.distance
 
 @login_required(login_url='userlogin')
 def volunteer(request):
     volunteer = get_object_or_404(Volunteer, user=request.user)
-    return render(request, 'volunteers.html', {'volunteer': volunteer, 'CURR_YEAR': settings.CURR_YEAR, 'CURR_SEM': settings.CURR_SEM})
+    activities = [activity for activity in settings.DOMAINS[volunteer.domain] if settings.ACTIVITIES[activity]]
+
+    today = datetime.now().date()
+    activity_name = volunteer.activity
+    events = Activity.objects.filter(name=activity_name, date=today)
+
+    return render(request, 'volunteers.html', {'volunteer': volunteer, 'CURR_YEAR': settings.CURR_YEAR, 'CURR_SEM': settings.CURR_SEM, 'activities': activities, 'events': events})
 
 @login_required(login_url='userlogin')
 def allot_activity(request):
@@ -38,82 +46,86 @@ class MarkAttendanceView(LoginRequiredMixin, View):
             actual_latitude = float(request.POST.get('actual_latitude'))
             actual_longitude = float(request.POST.get('actual_longitude'))
             geo_photo = request.FILES.get('geo_photo')
+            venue = request.POST.get('venue')
             
-            volunteer = Volunteer.objects.get(user_id=vol_prn)
-            
-            activity_name = volunteer.activity
-            activity = Activity.objects.get(name=activity_name)
-            print(activity_name)
-            print(activity)
-
+            volunteer = Volunteer.objects.get(user=request.user)
 
             current_time = datetime.now().time()
-            print(current_time)
-
-            
             today = datetime.now().date()
-            print(today)
-            if today != activity.date:
-                return JsonResponse({'error': 'Attendance can only be marked on the activity date.'}, status=400)
 
-            # Time window checks
-            in_time_window_start = (datetime.combine(today, activity.start_time) - timedelta(minutes=10)).time()
-            in_time_window_end = (datetime.combine(today, activity.start_time) + timedelta(minutes=40)).time()
+            activity_name = volunteer.activity
+            activities = Activity.objects.filter(name=activity_name, date=today, venue=venue)
+            count = activities.count()
 
-            out_time_window_start = (datetime.combine(today, activity.end_time) - timedelta(minutes=10)).time()
-            out_time_window_end = (datetime.combine(today, activity.end_time) + timedelta(minutes=40)).time()
+            error = ''
 
-            # Calculate distance
-            distance = calculate_distance(
-                actual_latitude, actual_longitude,
-                activity.latitude, activity.longitude
-            )
-            print(actual_latitude, actual_longitude,
-                activity.latitude, activity.longitude)
-            print(distance)
+            if count == 0:
+                return JsonResponse({'error': 'No active activity present to mark attendance.'}, status=400)
 
-            # Ensure volunteer is within 1 km range
-            if distance > 1000:
-                return JsonResponse({'error': 'You are too far from the activity location to mark attendance.'}, status=400)
+            for activity in activities:
+                # Time window checks
+                in_time_window_start = (datetime.combine(today, activity.start_time) - timedelta(minutes=10)).time()
+                in_time_window_end = (datetime.combine(today, activity.start_time) + timedelta(minutes=40)).time()
 
+                out_time_window_start = (datetime.combine(today, activity.end_time) - timedelta(minutes=10)).time()
+                out_time_window_end = (datetime.combine(today, activity.end_time) + timedelta(minutes=40)).time()
 
-            # In-Time Attendance
-            if not volunteer.marked_IN_attendance:
-                if in_time_window_start <= current_time <= in_time_window_end:
-                    # Mark in-time attendance
-                    volunteer.marked_IN_attendance = True
-                    # volunteer.attendance += f"{attendance}, "
-                    volunteer.save()
-
-                    Attendance.objects.create(
-                        coord_prn=coord_prn,
-                        coord_name=request.POST.get('coord_name'),
-                        activity=activity_name,
-                        vol_name=vol_name,
-                        vol_prn=vol_prn,
-                        actual_latitude=actual_latitude,
-                        actual_longitude=actual_longitude,
-                        geo_photo=geo_photo,
-                        time=datetime.now()
+                if not activity.isOnline:
+                    # Calculate distance
+                    distance = calculate_distance(
+                        actual_latitude, actual_longitude,
+                        activity.latitude, activity.longitude
                     )
-                    return JsonResponse({'message': 'In-time attendance marked successfully!'}, status=200)
-                else:
-                    return JsonResponse({'error': 'Current time is outside the in-time attendance window.'}, status=400)
-            else:
-                # Out-Time Attendance
-                if out_time_window_start <= current_time <= out_time_window_end:
-                    # Mark out-time attendance
-                    # attendance = f"${today.strftime('%d-%m-%Y')}"
-                    volunteer.attendance[-13] = "$"
-                    volunteer.save()
+                    print(distance)
 
-                    attendance_record = Attendance.objects.get(vol_prn=vol_prn, activity=activity_name)
-                    attendance_record.marked_IN_attendance = False
-                    attendance_record.save()
+                    # Ensure volunteer is within 1.5 km range
+                    if distance > 2:
+                        error = "You are too far from the activity location to mark attendance."
+                        continue
+                        # return JsonResponse({'error': 'You are too far from the activity location to mark attendance.'}, status=400)
 
-                    return JsonResponse({'message': 'Out-time attendance marked successfully!'}, status=200)
+                # In-Time Attendance
+                if not volunteer.marked_IN_attendance:
+                    if in_time_window_start <= current_time and current_time <= in_time_window_end:
+                        # Mark in-time attendance
+                        volunteer.marked_IN_attendance = True
+                        # volunteer.attendance += f"{attendance}, "
+                        volunteer.save()
+
+                        Attendance.objects.create(
+                            coord_prn=coord_prn,
+                            coord_name=request.POST.get('coord_name'),
+                            activity=activity_name,
+                            vol_name=vol_name,
+                            vol_prn=vol_prn,
+                            actual_latitude=actual_latitude,
+                            actual_longitude=actual_longitude,
+                            geo_photo=geo_photo,
+                            time=datetime.now()
+                        )
+                        return JsonResponse({'message': 'In-time attendance marked successfully!'}, status=200)
+                    else:
+                        error = 'Current time is outside the in-time attendance window.'
+                        continue
+                        # return JsonResponse({'error': 'Current time is outside the in-time attendance window.'}, status=400)
                 else:
-                    return JsonResponse({'error': 'Current time is outside the out-time attendance window.'}, status=400)
+                    # Out-Time Attendance
+                    if current_time >= out_time_window_start or current_time <= out_time_window_end:
+                        volunteer.attendance = volunteer.attendance[:-13] + "$" + volunteer.attendance[-12:]
+                        volunteer.marked_IN_attendance = False
+                        volunteer.save()
+
+                        # attendance_record = Attendance.objects.get(vol_prn=vol_prn, activity=activity_name)
+                        # # attendance_record.marked_IN_attendance = False
+                        # attendance_record.save()
+
+                        return JsonResponse({'message': 'Out-time attendance marked successfully!'}, status=200)
+                    else:
+                        error = 'Current time is outside the out-time attendance window.'
+                        continue
+                        # return JsonResponse({'error': 'Current time is outside the out-time attendance window.'}, status=400)
+
+            return JsonResponse({'error': error}, status=400)
 
         except Activity.DoesNotExist:
             return JsonResponse({'error': 'Activity does not exist.'}, status=404)
@@ -125,20 +137,38 @@ class MarkAttendanceView(LoginRequiredMixin, View):
     def get(self, request, *args, **kwargs):
         return JsonResponse({'error': 'GET method not allowed.'}, status=405)
 
+# def calculate_distance(lat1, lon1, lat2, lon2):
+#     lat1_rad = math.radians(lat1)
+#     lon1_rad = math.radians(lon1)
+#     lat2_rad = math.radians(lat2)
+#     lon2_rad = math.radians(lon2)
 
-import math
+#     dlon = abs(lon2_rad - lon1_rad)
+#     dlat = abs(lat2_rad - lat1_rad)
+#     a = math.sin(dlat / 2)*2 + math.cos(lat1_rad) * math.cos(lat2_rad) * math.sin(dlon / 2)*2
+#     c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
+#     distance = 6371 * c
+#     return distance
+
+# def calculate_distance(lat1, lon1, lat2, lon2):
+#     lat1_rad = math.radians(lat1)
+#     lon1_rad = math.radians(lon1)
+#     lat2_rad = math.radians(lat2)
+#     lon2_rad = math.radians(lon2)
+
+#     dlat = lat2_rad - lat1_rad
+#     dlon = lon2_rad - lon1_rad
+
+#     a = math.sin(dlat / 2)**2 + math.cos(lat1_rad) * math.cos(lat2_rad) * math.sin(dlon / 2)**2
+#     c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
+
+#     distance = 6371 * c
+#     return distance
+
 def calculate_distance(lat1, lon1, lat2, lon2):
-    lat1_rad = math.radians(lat1)
-    lon1_rad = math.radians(lon1)
-    lat2_rad = math.radians(lat2)
-    lon2_rad = math.radians(lon2)
-
-    dlon = lon2_rad - lon1_rad
-    dlat = lat2_rad - lat1_rad
-    a = math.sin(dlat / 2)*2 + math.cos(lat1_rad) * math.cos(lat2_rad) * math.sin(dlon / 2)*2
-    c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
-    distance = 6371 * c
-    return distance
+    coords_1 = (lat1, lon1)
+    coords_2 = (lat2, lon2)
+    return geopy.distance.geodesic(coords_1, coords_2).km
 
 @login_required(login_url='userlogin')
 def view_attendance(request):
@@ -152,8 +182,7 @@ def view_attendance(request):
         for entry in attendance_list:
             if entry:
                 status = 'Present' if entry.startswith('$') else 'Absent'
-                date = entry[1:] 
+                date = entry[1:]
                 parsed_attendance.append({'date': date, 'status': status})
-
 
         return JsonResponse({'attendance': parsed_attendance})
