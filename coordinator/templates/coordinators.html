@@ -24,7 +24,7 @@
             justify-content: center;
             align-items: center;
         }
-        
+
         .box-container {
             width: 95%;
             margin: 0 auto;
@@ -33,7 +33,7 @@
             padding: 20px;
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
         }
-        
+
         header#head {
             background-color: #234d20;
             color: white;
@@ -42,15 +42,15 @@
             padding: 10px;
             border-radius: 10px 10px 0 0;
         }
-        
+
         .dashboard-title {
             font-size: 20px;
             font-weight: bold;
             text-align: center;
             margin-bottom: 20px;
         }
-        
-        
+
+
         .dashboard-btn {
             display: block;
             width: 100%;
@@ -64,12 +64,12 @@
             text-align: center;
             cursor: pointer;
         }
-        
+
         .dashboard-btn:hover {
             background-color: #234d20;
         }
-        
-        
+
+
         .activity-select {
             display: block;
             width: 100%;
@@ -77,44 +77,44 @@
             border-radius: 5px;
             margin-bottom: 20px;
             font-size: 16px;
-            
-        
+
+
         }
-        
-        
+
+
         .options-section {
             text-align: center;
         }
-        
+
         .hidden {
             display: none;
         }
-        
+
         .D-container {
             text-align: center;
-        
+
         }
-        
+
         .D-container h1 {
             margin: 10px;
         }
-        
+
         body {
             font-family: 'Roboto', sans-serif;
             background-color: #f8f9fa;
         }
-        
+
         .wrapper {
             display: flex;
             text-align: center;
         }
-        
+
         h1,
         h2 {
             font-size: 2em;
             font-weight: bold;
         }
-        
+
         .sidebar {
             background-color: #c9df8a;
             color: white;
@@ -124,8 +124,8 @@
             transition: all 0.3s ease;
             z-index: 1000;
         }
-        
-        
+
+
         .content {
             flex: 1;
             padding: 20px;
@@ -135,18 +135,18 @@
             /* You can change this to #232d20 if you want a darker dashboard content area */
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
         }
-        
-        
+
+
         .sidebar ul {
             list-style-type: none;
             padding: 20px;
         }
-        
+
         .sidebar ul li {
             padding: 15px;
             text-align: left;
         }
-        
+
         .sidebar ul li a {
             color: white;
             text-decoration: none;
@@ -154,12 +154,12 @@
             font-size: 16px;
             transition: background-color 0.3s ease;
         }
-        
+
         .sidebar ul li a:hover {
             background-color: #232d20;
             padding-left: 10px;
         }
-        
+
         .close-btn {
             background-color: transparent;
             color: white;
@@ -170,7 +170,7 @@
             right: 10px;
             cursor: pointer;
         }
-        
+
         /* Content */
         .content {
             flex: 1;
@@ -179,14 +179,14 @@
             transition: margin-left 0.3s ease;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
         }
-        
+
         /*/////////////////////////////////////*/
         h1,
         h2 {
             font-size: 2em;
             font-weight: bold;
         }
-        
+
         .container {
             width: 100%;
             background-color: white;
@@ -194,25 +194,25 @@
             border-radius: 10px;
             /* text-align: center; */
         }
-        
+
         header {
             background-color: #234d20;
             color: white;
             border-radius: 10px 10px 0 0;
         }
-        
+
         h2 {
             margin-bottom: 20px;
             font-size: 1.5em;
         }
-        
+
         select {
             width: 100%;
             padding: 12px;
             border-radius: 5px;
             margin-bottom: 20px;
         }
-        
+
         button {
             background-color: #c9df8a;
             color: white;
@@ -224,61 +224,61 @@
             font-size: 1.1em;
             transition: background-color 0.3s ease;
         }
-        
+
         button:hover {
             background-color: #234d20;
         }
-        
+
         #qrCodeSection {
             display: none;
             margin-top: 20px;
             text-align: center;
         }
-        
+
         #qrCodeImage {
             max-width: 100%;
             height: auto;
             margin-top: 20px;
         }
-        
+
         p{
             font-size:14px
         }
-        
+
 
         @media screen and (max-width: 768px) {
             .container {
                 padding: 15px;
             }
-        
+
             h2 {
                 font-size: 1.3em;
             }
-        
+
             select,
             button {
                 font-size: 1em;
                 padding: 10px;
             }
         }
-        
+
         @media screen and (max-width: 480px) {
             h2 {
                 font-size: 1.2em;
             }
-        
+
             select,
             button {
                 font-size: 0.9em;
                 padding: 8px;
             }
         }
-        
+
         .D_content {
             text-align: center;
         }
-        
-        
+
+
         header#head {
             background-color: #234d20;
             color: white;
@@ -287,7 +287,7 @@
             padding: 10px;
             border-radius: 10px 10px 0 0;
         }
-        
+
         #how{
             box-shadow: none;
         }
@@ -383,6 +383,43 @@
                     <h1 style="font-size: 19px; font-weight: bold;"  >Welcome To SW&D's Smart Attendance System</h1>
                     <p style="font-size: 14px;">We work for the betterment<br>of the society</p>
                 </div>
+                <br>
+
+                <div>
+                    <h1>Choose your SW&D Domain</h1>
+                    {% if coordinator.registered_academic_year == CURR_YEAR %}
+                    {% if not coordinator.domain %}
+                    <form method="POST" action="{% url 'coordinator' %}">
+                        {% csrf_token %}
+                        <select name="domain" id="activitySelec" required>
+                            <option value="">Select your domain</option>
+                            <option value="Social Activity">Social Activity</option>
+                            <option value="Website">Website</option>
+                            <option value="Social Media">Social Media</option>
+                            <option value="Sponsorship">Sponsorship</option>
+                            <option value="Outreach">Outreach</option>
+                            <option value="Scholarship">Scholarship</option>
+                            <option value="Media Acquisition & Creatives">Media Acquisition & Creatives</option>
+                            <option value="Content">Content</option>
+                            <option value="Research & Innovation">Research & Innovation</option>
+                            <option value="Database">Database</option>
+                            <option value="Multimedia">Multimedia</option>
+                            <option value="Aesthetics">Aesthetics</option>
+                            <option value="Finance">Finance</option>
+                            <option value="Venue & Resource">Venue & Resource</option>
+                            <option value="Animal Welfare">Animal Welfare</option>
+                        </select>
+
+                        <button type="submit">Generate QR Code</button>
+                    </form>
+
+                    {% else %}
+                    <p>You have chosen {{ coordinator.domain }} as your domain.</p>
+                    {% endif %}
+                {% else %}
+                    <p>You are not registered for this academic year.</p>
+                {% endif %}
+                </div>
             </div>
 
             <!-- Activity -->
@@ -402,14 +439,15 @@
                                 <option value="">No activities available</option>
                             {% endif %}
                         </select>
-                        
+
                         <button type="submit">Generate QR Code</button>
                     </form>
                     <div>
-                        
+
                     {% else %}
                     <p>Scan this QR code to mark your attendance for {{ coordinator.activity }}</p>
                         <img src="{{ coordinator.qr_codeSS.url }}" alt="QR Code for {{ coordinator.activity }}">
+                        <!--<p>{{ coordinator.qr_codeSS.url }}</p>-->
                     {% endif %}
                 {% else %}
                     <p>You are not registered for this semester.</p>
@@ -432,11 +470,11 @@
                                 <option value="">No activities available</option>
                             {% endif %}
                         </select>
-                        
+
                         <button type="submit">Generate QR Code</button>
                     </form>
                     <div>
-                        
+
                     {% else %}
                     <p>Scan this QR code to mark your attendance for {{ coordinator.flagshipEvent }}</p>
                         <img src="{{ coordinator.qr_codeFE.url }}" alt="QR Code for {{ coordinator.flagshipEvent }}">
@@ -459,11 +497,11 @@
                         <option value="seminar">Seminar</option>
                         <option value="meetup">Meetup</option>
                     </select>
-                    
+
                     <button type="submit">Generate QR Code</button>
                 </form>
                 <div>
-                    
+
                 {% else %}
                 <p>Scan this QR code to mark your attendance for {{ coordinator.flagshipEvent }}</p>
                     <img src="{{ coordinator.qr_codeFE.url }}" alt="QR Code for {{ coordinator.flagshipEvent }}">
@@ -478,16 +516,16 @@
                         <div class="box">
                             <i class="fas fa-phone"></i>
                             <h3>Phone Number</h3>
-                            <a href="tel:8010897017">+91 80108 971017</a>
+                            <a href="tel:8010897017">+91 80108 97017</a>
                             <a href="tel:9168151957">+91 91681 51957</a>
                         </div>
-                        
+
                         <div class="box">
                             <i class="fas fa-map-marker-alt"></i>
                             <h3>Office Address</h3>
                             <a href="https://www.google.com/maps/dir//Vishwakarma+Institute+of+Technology+(VIT),+VISHWAKARMA+INSTITUTE+OF+TECHNOLOGY+VIT,+Bibwewadi,+Pune,+Maharashtra+411037/data=!4m6!4m5!1m1!4e2!1m2!1m1!1s0x3bc2ea950f616219:0x321bdae2cea9f064?sa=X&ved=1t:57443&ictx=111">VISHWAKARMA INSTITUTE OF TECHNOLOGY VIT, Upper Indira Nagar, Bibwewadi, Pune, Maharashtra 411037</a>
                         </div>
-                        
+
                         <div class="box">
                             <i class="fas fa-envelope"></i>
                             <h3>Email Address</h3>
@@ -496,7 +534,7 @@
                         </div>
                       </div>
                 </section>
-            
+
             <div id="notification" class="notification">Logged out successfully!</div>
     </section>
     <script>
@@ -584,7 +622,7 @@
 
         // Logout Button Functionality
         document.getElementById('logoutButton').addEventListener('click', function () {
-            e.preventDefault(); 
+            e.preventDefault();
             const notification = document.getElementById('notification');
             notification.classList.add('show');
 
@@ -593,7 +631,7 @@
             }, 3000);
 
             setTimeout(() => {
-                document.getElementById('logoutForm').submit(); 
+                document.getElementById('logoutForm').submit();
             }, 1000);
         });
 

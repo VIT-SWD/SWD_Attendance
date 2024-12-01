@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    {% if message %}
+    {{ message }}
+    {% endif %}
+
+    <h1>Delete Volunteer from User & Volunteer</h1>
+    <form action="{% url 'deleteVol' %}" method="post">
+        {% csrf_token %}
+        <input type="email" name="email" placeholder="Enter volunteer email">
+        <button type="submit">Delete Volunteer</button>
+    </form>
+
+    <h1>Delete Volunteer from only Volunteer</h1>
+    <form action="{% url 'deleteOnlyVolunteer' %}" method="post">
+        {% csrf_token %}
+        <input type="email" name="email" placeholder="Enter volunteer email">
+        <button type="submit">Delete Volunteer</button>
+    </form>
+
+    <h1>View Volunteer</h1>
+    <form action="{% url 'viewVolunteer' %}" method="post">
+        {% csrf_token %}
+        <input type="email" name="email" placeholder="Enter volunteer email">
+        <button type="submit">View Volunteer</button>
+    </form>
+</body>
+</html>

@@ -11,6 +11,7 @@ from datetime import datetime, timedelta
 from django.conf import settings
 import math
 import geopy.distance
+from django.utils.timezone import localtime
 
 @login_required(login_url='userlogin')
 def volunteer(request):
@@ -34,12 +35,13 @@ def allot_activity(request):
 
 @method_decorator(csrf_exempt, name='dispatch')
 class MarkAttendanceView(LoginRequiredMixin, View):
-    login_url = '/userlogin/' 
-    
+    login_url = '/userlogin/'
+
     def post(self, request, *args, **kwargs):
         try:
             coord_prn = request.POST.get('coord_prn')
             coord_name = request.POST.get('coord_name')
+            coord_activity = request.POST.get('coord_activity')
             volunteer = get_object_or_404(Volunteer, user=request.user)
             vol_name = volunteer.vname
             vol_prn = volunteer.prn
@@ -47,13 +49,19 @@ class MarkAttendanceView(LoginRequiredMixin, View):
             actual_longitude = float(request.POST.get('actual_longitude'))
             geo_photo = request.FILES.get('geo_photo')
             venue = request.POST.get('venue')
-            
+
             volunteer = Volunteer.objects.get(user=request.user)
 
-            current_time = datetime.now().time()
-            today = datetime.now().date()
+            # current_time = datetime.now().time()
+            # today = datetime.now().date()
+            current_time = localtime().time()
+            today = localtime().date()
 
             activity_name = volunteer.activity
+
+            if activity_name != coord_activity:
+                return JsonResponse({'error': 'The activity of coordinator and volunteer do not match.'}, status=400)
+
             activities = Activity.objects.filter(name=activity_name, date=today, venue=venue)
             count = activities.count()
 
@@ -68,7 +76,7 @@ class MarkAttendanceView(LoginRequiredMixin, View):
                 in_time_window_end = (datetime.combine(today, activity.start_time) + timedelta(minutes=40)).time()
 
                 out_time_window_start = (datetime.combine(today, activity.end_time) - timedelta(minutes=10)).time()
-                out_time_window_end = (datetime.combine(today, activity.end_time) + timedelta(minutes=40)).time()
+                out_time_window_end = (datetime.combine(today, activity.end_time) + timedelta(minutes=20)).time()
 
                 if not activity.isOnline:
                     # Calculate distance
@@ -79,7 +87,7 @@ class MarkAttendanceView(LoginRequiredMixin, View):
                     print(distance)
 
                     # Ensure volunteer is within 1.5 km range
-                    if distance > 2:
+                    if distance > 1:
                         error = "You are too far from the activity location to mark attendance."
                         continue
                         # return JsonResponse({'error': 'You are too far from the activity location to mark attendance.'}, status=400)
@@ -94,7 +102,7 @@ class MarkAttendanceView(LoginRequiredMixin, View):
 
                         Attendance.objects.create(
                             coord_prn=coord_prn,
-                            coord_name=request.POST.get('coord_name'),
+                            coord_name=coord_name,
                             activity=activity_name,
                             vol_name=vol_name,
                             vol_prn=vol_prn,
@@ -105,7 +113,7 @@ class MarkAttendanceView(LoginRequiredMixin, View):
                         )
                         return JsonResponse({'message': 'In-time attendance marked successfully!'}, status=200)
                     else:
-                        error = 'Current time is outside the in-time attendance window.'
+                        error = f'Current time is outside the in-time attendance window. {in_time_window_start} - {in_time_window_end} - {activity.venue} - {current_time}'
                         continue
                         # return JsonResponse({'error': 'Current time is outside the in-time attendance window.'}, status=400)
                 else:
@@ -178,7 +186,7 @@ def view_attendance(request):
 
         attendance_list = attendance_data.split(", ")
         parsed_attendance = []
-        
+
         for entry in attendance_list:
             if entry:
                 status = 'Present' if entry.startswith('$') else 'Absent'

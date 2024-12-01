@@ -1,5 +1,11 @@
 from django.db import models
 from django.contrib.auth.models import User
+import os
+
+def profile_picture_upload_path(instance, filename):
+    ext = filename.split('.')[-1]
+    new_filename = f"{instance.user.first_name}_{instance.user.username}_{instance.prn}.{ext}"
+    return os.path.join('profile_pictures', new_filename)
 
 class Volunteer(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
@@ -7,7 +13,7 @@ class Volunteer(models.Model):
     email = models.EmailField(max_length=30)
     gender = models.CharField(max_length=10)
     domain = models.CharField(max_length=50)
-    activity = models.CharField(max_length=30, default='')
+    activity = models.CharField(max_length=30, default='', blank=True)
     dept = models.CharField(max_length=60)
     academic_year = models.CharField(max_length=10, default='FY')
     registered_academic_year = models.CharField(max_length=30, default='2024-2025')
@@ -17,11 +23,11 @@ class Volunteer(models.Model):
     contact_num = models.FloatField()
     blood_group = models.CharField(max_length=10, default='')
     guardian_faculty = models.CharField(max_length=50, default='not_assigned')
-    attendance = models.CharField(max_length=350, default='')
+    attendance = models.CharField(max_length=350, default='', blank=True)
     marked_IN_attendance = models.BooleanField(default=False)
     # role = models.CharField(max_length=20, default='Volunteer')
-    profile_picture = models.ImageField(upload_to='static/profile_pictures', default='default-profile.jpg')
-    def str(self):
+    profile_picture = models.ImageField(upload_to='profile_pictures', default='default-profile.jpg')
+    def __str__(self):
         return self.vname
     class Meta:
         ordering = ['vname']
@@ -39,14 +45,14 @@ class Coordinator(models.Model):
     prn = models.BigIntegerField()
     contact_num = models.FloatField()
     blood_group = models.CharField(max_length=10, default='')
-    activity = models.CharField(max_length=20, null=True)
-    flagshipEvent = models.CharField(max_length=30)
+    activity = models.CharField(max_length=20, null=True, blank=True)
+    flagshipEvent = models.CharField(max_length=30, blank=True)
     domain = models.CharField(max_length=30, null=True)
     profile_picture = models.ImageField(upload_to='profile_pictures/', default='default-profile.jpg')
     qr_codeSS = models.ImageField(upload_to='qr_codes/Social_Services/', null=True, blank=True)
     qr_codeFE = models.ImageField(upload_to='qr_codes/Flagship/', null=True, blank=True)
     # role = models.CharField(max_length=20, default='Coordinator')
-    def _str_(self):
+    def __str__(self):
         return self.cname
     class Meta:
         verbose_name_plural = 'Coordinators'
@@ -58,32 +64,32 @@ class Secretary(models.Model):
     email = models.EmailField(max_length=30)
     gender = models.CharField(max_length=10)
     dept = models.CharField(max_length=60)
-    academic_year = models.CharField(max_length=10)
+    academic_year = models.CharField(max_length=10, blank=True)
     registered_academic_year = models.CharField(max_length=30, default='2024-2025')
     registered_semester = models.IntegerField(null=True, default=1)
-    domain = models.CharField(max_length=20)
-    flagshipEvent = models.CharField(max_length=30, null=True)
-    activity = models.CharField(max_length=20, null = True)
+    domain = models.CharField(max_length=20,  blank=True)
+    flagshipEvent = models.CharField(max_length=30, null=True, blank=True)
+    activity = models.CharField(max_length=20, null = True, blank=True)
     div = models.CharField(max_length=10)
     prn = models.BigIntegerField()
     blood_group = models.CharField(max_length=10, default='')
     contact_num = models.FloatField()
-    profile_picture = models.ImageField(upload_to='static/profile_pictures', default='default-profile.jpg')
+    profile_picture = models.ImageField(upload_to=profile_picture_upload_path, default='default-profile.jpg')
     # role = models.CharField(max_length=20, default='Secretary')
-    def _str_(self):
+    def __str__(self):
         return self.sname
     class Meta:
         verbose_name_plural = 'Secretaries'
         ordering = ['sname']
 
 class Activity(models.Model):
-    name = models.CharField(max_length=255, null=True)  
-    date = models.DateField(null=True)                 
+    name = models.CharField(max_length=255, null=True)
+    date = models.DateField(null=True)
     start_time = models.TimeField(null=True)
-    end_time = models.TimeField(null=True)              
-    map_link = models.URLField(max_length=2000, null=True, blank=True) 
-    description = models.TextField(blank=True, null=True) 
-    latitude = models.FloatField(null=True)            
+    end_time = models.TimeField(null=True)
+    map_link = models.URLField(max_length=2000, null=True, blank=True)
+    description = models.TextField(blank=True, null=True)
+    latitude = models.FloatField(null=True)
     longitude = models.FloatField(null=True)
     isOnline = models.BooleanField(default=False)
     venue = models.CharField(max_length=100, default='')
@@ -103,7 +109,7 @@ class FailedRegistration(models.Model):
 class Domain(models.Model):
     name = models.CharField(max_length=40)
     enabled = models.BooleanField()
-    def _str_(self):
+    def __str__(self):
         return self.name
     class Meta:
         verbose_name_plural = 'Domains'
@@ -122,3 +128,5 @@ class Attendance(models.Model):
     attendance = models.CharField(max_length=350, default='')
     marked_IN_attendance = models.BooleanField(default=False)
     venue = models.CharField(max_length=100, default='')
+    def __str__(self):
+        return self.vol_name

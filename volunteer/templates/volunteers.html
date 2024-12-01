@@ -91,22 +91,25 @@ form#attendanceForm input[type="text"],
 
     .hidden {
         display: none;
-    }   
-    
+    }
+    p
+    {
+        font-size: 12px;
+    }
     </style>
 <body>
 <header class="header">
-   
+
    <section class="flex">
 
       <a href="" class="logo">Hello, {{user.last_name}} !!</a>
-   
+
       <div class="icons">
          <div id="menu-btn" class="fas fa-bars"></div>
       </div>
 
       <div class="profile">
-         <img src="images/pic-1.jpg" class="image" alt="">
+         <img src="{% static 'images/default-profile.jpg' %}" class="image" alt="">
          <h3 class="name"></h3>
          <p class="role">---</p>
          <a href="{% url 'profile'%}" class="btn">view profile</a>
@@ -118,7 +121,7 @@ form#attendanceForm input[type="text"],
 
    </section>
 
-</header>   
+</header>
 
 <div class="side-bar">
 
@@ -146,7 +149,7 @@ form#attendanceForm input[type="text"],
          </button>
          </form>
     </nav>
- 
+
 
 </div>
 
@@ -212,7 +215,7 @@ form#attendanceForm input[type="text"],
                 <tbody id="attendanceTableBody">
                     <!-- Attendance data will be populated here -->
                 </tbody>
-            </table>        
+            </table>
             {% else %}
             <div>
                 <p>You haven't chosen or attended any activity.</p>
@@ -224,70 +227,39 @@ form#attendanceForm input[type="text"],
             </div>
         {% endif %}
     </div>
-    
-    
- 
+
+
+
         <div id="markAttendance" class="content hidden">
         {% if volunteer.registered_academic_year == CURR_YEAR and volunteer.registered_semester == CURR_SEM %}
         {% if volunteer.activity %}
         <h1 style="text-align: center;">Scan Coordinator QR</h1>
         <br>
-        
+
         <div style="display: flex; justify-content: center;">
             <div id="reader" style="width:65%; height: 50%;"></div><br>
         </div><br>
         <div id="result"></div>
+        <button onclick="startScan()" id="start-scan">Start Scanning</button>
 
-    <script>
-        function onScanSuccess(qrCodeMessage) {
-            // document.getElementById('result').innerText = `QR Code Message: ${qrCodeMessage}`;
-            document.getElementById('coord_name').value = `${qrCodeMessage.split('\nName: ')[1].split('\n')[0]}`;
-            document.getElementById('coord_prn').value = `${qrCodeMessage.substring(5, 13)}`;
-            
-            fetch('/mark_attendance/', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': '{{ csrf_token }}'
-                },
-                body: JSON.stringify({ qr_data: qrCodeMessage })
-            })
-            .then(response => response.json())
-            .then(data => {
-                console.log('Success:', data);
-            })
-            .catch((error) => {
-                console.error('Error:', error);
-            });
 
-            if (html5QrcodeScanner) {
-                html5QrcodeScanner.clear();
-            }
-        }
-
-        function onScanError(errorMessage) {
-            console.error('QR Code Scan Error:', errorMessage);
-        }
-
-        const html5QrcodeScanner = new Html5QrcodeScanner(
-            "reader", { fps: 10, qrbox: 250 });
-        html5QrcodeScanner.render(onScanSuccess, onScanError);
-    </script>
-         
-    
     <form id="attendanceForm" method="POST" href="{% url 'mark_attendance' %}" style="text-align: center;">
         {% csrf_token %}
         <input type="text" id="coord_name" class="attendanceForm" name="coord_name" placeholder="Coordinator Name" readonly>
         <input type="text" id="coord_prn" class="attendanceForm" name="coord_prn" placeholder="Coordinator PRN" readonly>
+        <input type="text" id="coord_activity" class="attendanceForm" name="coord_activity" placeholder="Activity" readonly>
         <!-- <input type="text" id="vol_name" class="attendanceForm" name="vol_name" placeholder="Volunteer Name" value="{{ user.username }}" readonly>
         <input type="text" id="vol_prn" class="attendanceForm" name="vol_prn" placeholder="Volunteer PRN" value="{{ user.id }}" readonly> -->
-        
+
         <br>
          <h1 style="padding-top: 3%; text-align: center;">Take a Geotagged Photo</h1>
         <br>
 
-        <video style="width:85%;" id="video" autoplay></video>
+        <div style="display: flex; justify-content: center;">
+            <video style="width:85%; display: none;" id="video" autoplay></video>
+        </div>
         <canvas id="canvas" style="display:none;"></canvas><br><br>
+        <button id="start-camera">Start Camera</button><br><br>
         <button type="button" id="capture-btn" style="cursor: pointer;">Take Photo</button><br>
         <img id="photo" alt="Your captured photo will appear here" style="display: block; margin: 20px auto; max-width: 100%; align-items:center;"/>
         <input type="hidden" id="geo_photo" name="geo_photo">
@@ -305,9 +277,144 @@ form#attendanceForm input[type="text"],
                 <option value="temp">temp</option>
             {% endif %}
         </select>
-        
+
         <button type="submit" style="cursor: pointer;">Submit Attendance</button>
     </form>
+
+    <script>
+        // function onScanSuccess(qrCodeMessage) {
+        //     console.log(qrCodeMessage);
+        //     // document.getElementById('result').innerText = `QR Code Message: ${qrCodeMessage}`;
+        //     document.getElementById('coord_name').value = `${qrCodeMessage.split('\nName: ')[1].split('\n')[0]}`;
+        //     document.getElementById('coord_prn').value = `${qrCodeMessage.substring(5, 13)}`;
+
+        //     fetch('/mark_attendance/', {
+        //         method: 'POST',
+        //         headers: {
+        //             'Content-Type': 'application/json',
+        //             'X-CSRFToken': '{{ csrf_token }}'
+        //         },
+        //         body: JSON.stringify({ qr_data: qrCodeMessage })
+        //     })
+        //     .then(response => response.json())
+        //     .then(data => {
+        //         console.log('Success:', data);
+        //     })
+        //     .catch((error) => {
+        //         console.error('Error:', error);
+        //     });
+
+        //     if (html5QrcodeScanner) {
+        //         html5QrcodeScanner.clear();
+        //     }
+        // }
+
+        // function onScanError(errorMessage) {
+        //     console.error('QR Code Scan Error:', errorMessage);
+        // }
+
+        // function startScan() {
+        //     const html5QrcodeScanner = new Html5QrcodeScanner(
+        //         'reader', { fps: 10, qrbox: { width: 250, height: 250 } });
+        //     html5QrcodeScanner.render(onScanSuccess, onScanError);
+        //     document.getElementById('start-scan').style.display = 'none';
+        // }
+
+
+        // function onScanSuccess(qrCodeMessage) {
+        //     // document.getElementById('result').innerText = `QR Code Message: ${qrCodeMessage}`;
+        //     document.getElementById('coord_name').value = `${qrCodeMessage.split('\nName: ')[1].split('\n')[0]}`;
+        //     document.getElementById('coord_prn').value = `${qrCodeMessage.substring(5, 13)}`;
+
+        //     fetch('/mark_attendance/', {
+        //         method: 'POST',
+        //         headers: {
+        //             'Content-Type': 'application/json',
+        //             'X-CSRFToken': '{{ csrf_token }}'
+        //         },
+        //         body: JSON.stringify({ qr_data: qrCodeMessage })
+        //     })
+        //     .then(response => response.json())
+        //     .then(data => {
+        //         console.log('Success:', data);
+        //     })
+        //     .catch((error) => {
+        //         console.error('Error:', error);
+        //     });
+
+        //     if (html5QrcodeScanner) {
+        //         html5QrcodeScanner.clear();
+        //     }
+        // }
+
+        // function onScanError(errorMessage) {
+        //     console.error('QR Code Scan Error:', errorMessage);
+        // }
+
+        // const html5QrcodeScanner = new Html5QrcodeScanner(
+        //     "reader", { fps: 10, qrbox: 250 });
+        // html5QrcodeScanner.render(onScanSuccess, onScanError);
+
+
+        let html5QrCode;
+
+        // Start the QR reader
+        function startScan() {
+            const cameraId = "reader"; // The ID of the scanner element
+            html5QrCode = new Html5Qrcode(cameraId);
+
+            html5QrCode.start(
+                { facingMode: "environment" }, // Use back camera
+                { fps: 10, qrbox: { width: 250, height: 250 } },
+                (qrCodeMessage) => {
+                    // console.log(`QR Code Scanned: ${qrCodeMessage}`);
+                    document.getElementById('coord_name').value = `${qrCodeMessage.split('\nName: ')[1].split('\n')[0]}`;
+                    document.getElementById('coord_prn').value = `${qrCodeMessage.substring(5, 13)}`;
+                    document.getElementById('coord_activity').value = `${qrCodeMessage.split('\nActivity: ')[1].split('\n')[0]}`;
+
+                    fetch('/mark_attendance/', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': '{{ csrf_token }}'
+                        },
+                        body: JSON.stringify({ qr_data: qrCodeMessage })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        console.log('Success:', data);
+                        stopAndClearScanner();
+                    })
+                    .catch((error) => {
+                        console.error('Error:', error);
+                        stopAndClearScanner();
+                    });
+                },
+                (errorMessage) => {
+                    console.error(`QR Code Scan Error: ${errorMessage}`);
+                }
+            ).catch((err) => {
+                console.error(`Unable to start scanning: ${err}`);
+            });
+        }
+
+        function stopAndClearScanner() {
+            if (html5QrCode) {
+                html5QrCode.stop()
+                    .then(() => {
+                        console.log("QR Code scanner stopped successfully.");
+                        return html5QrCode.clear(); // Clears the scanner UI
+                    })
+                    .then(() => {
+                        console.log("QR Code scanner UI cleared.");
+                    })
+                    .catch((err) => {
+                        console.error("Error stopping or clearing QR Code scanner:", err);
+                    });
+            }
+        }
+    </script>
+
     <p id="coordinates"></p>
     {% else %}
           <div>
@@ -325,7 +432,7 @@ form#attendanceForm input[type="text"],
   </div>
 
  </div>
-  
+
 
    <div id="contactUsContent" class="content-section" style="display: none;">
       <section class="contact">
@@ -333,7 +440,7 @@ form#attendanceForm input[type="text"],
             <div class="box">
                 <i class="fas fa-phone"></i>
                 <h3>Phone Number</h3>
-                <a href="tel:8010897017">+91 80108 971017</a>
+                <a href="tel:8010897017">+91 80108 97017</a>
                 <a href="tel:9168151957">+91 91681 51957</a>
             </div>
 
@@ -438,19 +545,19 @@ form#attendanceForm input[type="text"],
   let menuBtn = document.getElementById('menu-btn');
   let closeBtn = document.getElementById('close-btn');
   let body = document.body;
-  
+
   // Toggle Sidebar on Menu Button Click
   menuBtn?.addEventListener('click', () => {
      sideBar.classList.toggle('active'); // Show/hide sidebar
      body.classList.toggle('active'); // Adjust main content
   });
-  
+
   // Close Sidebar on Close Button Click
   closeBtn?.addEventListener('click', () => {
      sideBar.classList.remove('active'); // Hide sidebar
      body.classList.remove('active'); // Reset main content
   });
-  
+
   // Close Sidebar when window is resized (optional, to handle desktop/mobile transitions)
   window.addEventListener('resize', () => {
      if (window.innerWidth >= 1200) {
@@ -478,23 +585,23 @@ function startQRScanner() {
 
    function onScanSuccess(decodedText, decodedResult) {
       const resultElement = document.getElementById('qr-reader-results');
-      
+
       // Parse the decodedText
       const prnMatch = decodedText.match(/PRN:\s*(\S+)/);
       const nameMatch = decodedText.match(/Name:\s*(\S+\s+\S+)/);
       const activityMatch = decodedText.match(/Activity:\s*(\S+)/);
-      
+
       if (prnMatch && activityMatch) {
           const coord_prn = prnMatch[1];
           const activity = activityMatch[1];
           const coord_name = nameMatch[1];
-  
+
           // Display the results
           resultElement.innerHTML = `<p>Scanned QR Code - PRN: ${coord_prn}, Activity: ${activity}</p>`;
-          
+
           // Send data to the server
           sendAttendanceData(coord_prn, activity, coord_name);
-          
+
           // Stop scanning after successful scan
           Html5Qrcode.stop();
           document.getElementById('qrReader').classList.add('hidden');
@@ -502,7 +609,7 @@ function startQRScanner() {
           resultElement.innerHTML = "<p>Invalid QR Code format.</p>";
       }
   }
-  
+
 
   function sendAttendanceData(coord_prn, activity, coord_name) {
    fetch(`{% url 'mark_attendance' %}`, {  // Change to your actual URL
@@ -537,47 +644,61 @@ function startQRScanner() {
    const captureBtn = document.getElementById('capture-btn');
    const photo = document.getElementById('photo');
    const coordinates = document.getElementById('coordinates');
+   const startCam = document.getElementById('start-camera');
 
    // Access the camera
-   navigator.mediaDevices.getUserMedia({ video: true })
-       .then(stream => {
-           video.srcObject = stream;
-       })
-       .catch(err => {
-           console.error('Error accessing camera: ', err);
-       });
+   startCam.addEventListener('click', async () => {
+       if (startCam.innerText === 'Start Camera') {
+            video.style.display = 'block';
+           try {
+               const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+               video.srcObject = stream;
+               startCam.innerText = 'Stop Camera';
+           } catch (err) {
+               console.error('Error accessing camera:', err);
+           }
+       } else {
+           video.srcObject.getTracks().forEach(track => track.stop());
+           startCam.innerText = 'Start Camera';
+       }
+   });
 
    captureBtn.addEventListener('click', () => {
-       canvas.width = video.videoWidth;
-       canvas.height = video.videoHeight;
-       const context = canvas.getContext('2d');
-       context.drawImage(video, 0, 0, canvas.width, canvas.height);
+       if (startCam.innerText == "Start Camera"){
+           alert("The camera must be turned on before taking geotag photo!");
+       }
+       else{
+           canvas.width = video.videoWidth;
+           canvas.height = video.videoHeight;
+           const context = canvas.getContext('2d');
+           context.drawImage(video, 0, 0, canvas.width, canvas.height);
 
-       if (navigator.geolocation) {
-           navigator.geolocation.getCurrentPosition(position => {
-               const lat = position.coords.latitude;
-               const lon = position.coords.longitude;
+           if (navigator.geolocation) {
+               navigator.geolocation.getCurrentPosition(position => {
+                   const lat = position.coords.latitude;
+                   const lon = position.coords.longitude;
 
-               // Draw the geolocation on the image
-               context.font = '20px Arial';
-               context.fillStyle = 'yellow';
-               context.fillText(`Lat: ${lat.toFixed(6)}`, 10, canvas.height - 60);
-               context.fillText(`Lon: ${lon.toFixed(6)}`, 10, canvas.height - 30);
+                   // Draw the geolocation on the image
+                   context.font = '20px Arial';
+                   context.fillStyle = 'yellow';
+                   context.fillText(`Lat: ${lat.toFixed(6)}`, 10, canvas.height - 60);
+                   context.fillText(`Lon: ${lon.toFixed(6)}`, 10, canvas.height - 30);
 
-               // Convert the canvas to a data URL and display the image
-               const imageDataUrl = canvas.toDataURL('image/png');
-               photo.src = imageDataUrl;
+                   // Convert the canvas to a data URL and display the image
+                   const imageDataUrl = canvas.toDataURL('image/png');
+                   photo.src = imageDataUrl;
 
-               // Store the coordinates in hidden fields
-               document.getElementById('actual_latitude').value = lat;
-               document.getElementById('actual_longitude').value = lon;
+                   // Store the coordinates in hidden fields
+                   document.getElementById('actual_latitude').value = lat;
+                   document.getElementById('actual_longitude').value = lon;
 
-           }, err => {
-               console.error('Error getting location: ', err);
-               coordinates.innerText = 'Could not retrieve location';
-           });
-       } else {
-           coordinates.innerText = 'Geolocation is not supported by your browser';
+               }, err => {
+                   console.error('Error getting location: ', err);
+                   coordinates.innerText = 'Could not retrieve location';
+               });
+           } else {
+               coordinates.innerText = 'Geolocation is not supported by your browser';
+           }
        }
    });
 
@@ -620,27 +741,34 @@ function startQRScanner() {
             .then(data => {
                 const attendanceTableBody = document.getElementById('attendanceTableBody');
                 attendanceTableBody.innerHTML = '';  // Clear previous data
-    
+
                 data.attendance.forEach(entry => {
                     const row = document.createElement('tr');
                     const dateCell = document.createElement('td');
                     const statusCell = document.createElement('td');
-    
+
                     dateCell.textContent = entry.date;  // dd-mm-yyyy
                     statusCell.textContent = entry.status; // Present or Absent
-    
+
+                    if (entry.status == 'Present'){
+                        statusCell.style.color = 'green';
+                    }
+                    else{
+                        statusCell.style.color = 'red';
+                    }
+
                     row.appendChild(dateCell);
                     row.appendChild(statusCell);
                     attendanceTableBody.appendChild(row);
                 });
-    
+
                 // Show the attendance section
                 document.getElementById('viewAttendance').classList.remove('hidden');
             })
             .catch(error => console.error('Error fetching attendance data:', error));
     });
-    
+
 </script>
-  
+
 </body>
 </html>

@@ -1,4 +1,4 @@
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render, redirect, get_object_or_404
 import requests, openpyxl, re
 from authentication.models import Activity, Secretary, Volunteer
@@ -20,9 +20,16 @@ def secretaryView(request):
 
     if request.method == 'POST':
         secretary = get_object_or_404(Secretary, user=request.user)
-        if request.POST.get('activity'):
+        if request.POST.get('domain'):
+            secretary.domain = request.POST.get('domain')
+        elif request.POST.get('activity'):
             activity = request.POST.get('activity')
             secretary.activity = activity
+
+            # for dom, acts in settings.DOMAINS.items():
+            #     if activity in acts:
+            #         secretary.domain = dom
+            #         break
         else:
             flagshipEvent = request.POST.get('flagship')
             secretary.flagshipEvent = flagshipEvent
@@ -55,7 +62,8 @@ def add_activity(request):
         else:
             latitude, longitude = None, None
             print("No coordinates found")
-        print(latitude, longitude)
+            return JsonResponse({"error": "Invalid Map Link"})
+        # print(latitude, longitude)
 
         new_activity = Activity(
             name=activity,
@@ -64,7 +72,7 @@ def add_activity(request):
             end_time=endTime,
             map_link=map_link,
             description=description,
-            latitude=float(latitude) if latitude else None,  
+            latitude=float(latitude) if latitude else None,
             longitude=float(longitude) if longitude else None,
             isOnline = True if mode == 'online' else False,
             venue = venue
@@ -84,7 +92,7 @@ def add_activity(request):
 def extract_coordinates(url):
     regex = r'@?([-+]?[\d.]+),([-+]?[\d.]+)'
     expanded_url = expand_url(url)
-    print(f"Expanded URL: {expanded_url}") 
+    print(f"Expanded URL: {expanded_url}")
     matches = re.search(regex, expanded_url)
 
     if matches:
@@ -100,29 +108,29 @@ def expand_url(short_url):
         return response.url  # Return the expanded URL
     except requests.RequestException as e:
         print(f"Error expanding URL: {e}")
-        return short_url 
-    
+        return short_url
+
 
 def download_attendance(request):
     if request.method == 'POST':
         activity_name = request.POST.get('event-name')
-        
+
         volunteers = Volunteer.objects.filter(activity=activity_name)
-        
+
         workbook = openpyxl.Workbook()
         sheet = workbook.active
         sheet.title = 'Attendance'
-        
+
         headers = ['Name', 'Email', 'PRN', 'Contact No.']
-        
+
         # all_dates = set()
         # for volunteer in volunteers:
         #     attendance_dates = volunteer.attendance.split(', ')
         #     for date_entry in attendance_dates:
-        #         date = date_entry[1:] 
+        #         date = date_entry[1:]
         #         all_dates.add(date)
-        
-        # sorted_dates = sorted(all_dates, key=lambda x: x) 
+
+        # sorted_dates = sorted(all_dates, key=lambda x: x)
         all_dates = []
         for volunteer in volunteers:
             attendance_dates = volunteer.attendance.split(', ')
@@ -132,24 +140,24 @@ def download_attendance(request):
                     all_dates.append(date)
 
         sorted_dates = sorted(all_dates, key=lambda x: x)
-        headers.extend(sorted_dates)  
-        
+        headers.extend(sorted_dates)
+
         for col_num, header in enumerate(headers, 1):
             sheet.cell(row=1, column=col_num, value=header)
-        
+
         for row_num, volunteer in enumerate(volunteers, start=2):
             sheet.cell(row=row_num, column=1, value=volunteer.vname)
             sheet.cell(row=row_num, column=2, value=volunteer.email)
             sheet.cell(row=row_num, column=3, value=volunteer.prn)
             sheet.cell(row=row_num, column=4, value=volunteer.contact_num)
-            
+
             attendance_status = {}
             attendance_entries = volunteer.attendance.split(', ')
             for entry in attendance_entries:
                 status = 'Present' if entry.startswith('$') else 'Absent'
-                date = entry[1:] 
+                date = entry[1:]
                 attendance_status[date] = status
-            
+
             for col_num, date in enumerate(sorted_dates, start=5):
                 sheet.cell(row=row_num, column=col_num, value=attendance_status.get(date, 'Absent'))
 

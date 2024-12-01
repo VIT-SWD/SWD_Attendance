@@ -14,7 +14,7 @@
    <!-- custom css file link  -->
    <link rel="stylesheet" href="{% static 'style.css' %}">
    <style>
-      
+
       .logout-btn {
          background-color: #ff6b6b;
          color: white;
@@ -96,77 +96,86 @@
          color: white;
       }
 
-/* styling for form sections update */
-section {
-   padding: 2rem;
-    margin: 0 auto;
-    max-width: 1200px;
-}
-.form-container {
-   min-height: calc(100vh - 20rem);
-   display: flex;
-   align-items: center;
-   justify-content: center;
-}
+    /* styling for form sections update */
+    section {
+       padding: 2rem;
+        margin: 0 auto;
+        max-width: 1200px;
+    }
+    .form-container {
+       min-height: calc(100vh - 20rem);
+       display: flex;
+       align-items: center;
+       justify-content: center;
+    }
 
-.form-container form {
-   background-color: white;
-   border-radius: .5rem;
-   padding: 2rem;
-   width: 100%;
-}
+    .form-container form {
+       background-color: white;
+       border-radius: .5rem;
+       padding: 2rem;
+       width: 100%;
+    }
 
-.form-container form h3 {
-      background-color: #234d20;
-      color: white;
-      text-align: center;
-      font-size: 24px;
-      padding: 10px;
-      border-radius: 10px 10px 0 0;
-      font-weight: 100;
-  
-}
+    .form-container form h3 {
+          background-color: #234d20;
+          color: white;
+          text-align: center;
+          font-size: 24px;
+          padding: 10px;
+          border-radius: 10px 10px 0 0;
+          font-weight: 100;
 
-.form-container form p {
-   max-width: 80%;
-   font-size: 19px;
-   font-weight: bold;
-   padding-top: 1rem;
-   margin-bottom: 15px;
-}
+    }
 
-.form-container form .p1 {
-   margin-top: 15px;
-}
+    .form-container form p {
+       max-width: 80%;
+       font-size: 19px;
+       font-weight: bold;
+       padding-top: 1rem;
+       margin-bottom: 15px;
+    }
 
-.form-container form input {
-   max-width: 80%;
-}
+    .form-container form .p1 {
+       margin-top: 15px;
+    }
 
-.form-container form .image-preview {
-   max-width: 80%;
-}
+    .form-container form input {
+       max-width: 80%;
+    }
 
-.form-container form p span {
-   color: var(--red);
-}
+    .form-container form .image-preview {
+       max-width: 80%;
+    }
 
-.form-container form .box {
-   font-size: 16px;
-   border-radius: 5px;
-   padding: 10px;
-   border: 1px solid #ccc;
-   width: 100%;
-   margin-bottom: 10px;
-}
+    .form-container form p span {
+       color: var(--red);
+    }
+
+    .form-container form .box {
+       font-size: 16px;
+       border-radius: 5px;
+       padding: 10px;
+       border: 1px solid #ccc;
+       width: 100%;
+       margin-bottom: 10px;
+    }
 
 
 
-@media (max-width: 768px) {
-   .form-container form .p1 {
-      margin-top: 0;
-   }
-}
+    @media (max-width: 768px) {
+       .form-container form .p1 {
+          margin-top: 0;
+       }
+    }
+
+    .error {
+        color: black;
+        background-color: #ff6b6b;
+        padding: 1rem 0;
+        margin-top: 3.5rem;
+        font-size: 0.7rem;
+        font-weight: normal;
+    }
 
    </style>
 
@@ -239,8 +248,8 @@ section {
                {% url 'userlogin' %}
            {% endif %}">
          <i class="fas fa-home"></i><span>Home</span></a>
-         <a href=""><i class="fas fa-calendar-alt"></i><span>Event</span></a>
-         <a href=""><i class="fas fa-headset"></i><span>contact us</span></a>
+         <!--<a href=""><i class="fas fa-calendar-alt"></i><span>Event</span></a>-->
+         <a href=""><i class="fas fa-headset"></i><span>Contact Us</span></a>
          <form id="logoutForm" method="POST" action="{% url 'logout_view' %}">
             {% csrf_token %}
             <button type="submit" id="logoutButton" class="logout-btn" style="position: absolute; top: 85%; left: 30%;">
@@ -257,25 +266,45 @@ section {
          {% csrf_token %}
          <h3>Update Profile</h3>
          <div style="padding-left: 18%;">
+            <!--<div>-->
+                {% if messages %}
+                    {% for message in messages %}
+                        <p class="error" style="color: black; background-color: #ff6b6b; padding: 1rem; margin-top: 3.5rem; font-size: 1.2rem; font-weight: normal;">{{ message }}</p>
+                    {% endfor %}
+                {% endif %}
+            <!--</div>-->
+
          <p class="p1">Update Name</p>
-         <input  type="text" name="name" maxlength="50" class="box" value={{ user.username }}>
-         <p>Update Email</p>
-         <input  type="email" name="email" maxlength="50" class="box" value={{ user.email }}>
-         <p>Enter your password</p>
-         <input type="password" name="old_pass" maxlength="20" class="box">
+         <input  type="text" name="name" maxlength="50" class="box">
+         <!--<p>Update PRN</p>-->
+         <!--<input  type="text" name="prn" maxlength="8" minlength="8" class="box" value={{ prn }}>-->
+         <p>Enter your password <strong style="color: red;">*</strong></p>
+         <input type="password" name="old_pass" maxlength="20" class="box" required>
+         {% if errors.password %}
+            <small class="error">{{ errors.password }}</small>
+         {% endif %}
+
          <p>Do you want to change your password?<br>New Password</p>
          <input type="password" name="new_pass" maxlength="20" class="box">
+         {% if errors.password %}
+            <small class="error">{{ errors.new_pass }}</small>
+         {% endif %}
+
          <p>Confirm Password</p>
          <input type="password" name="c_pass" maxlength="20" class="box">
+         {% if errors.password %}
+            <small class="error">{{ errors.conf_pass }}</small>
+         {% endif %}
+
          <p>Current Profile Picture</p>
          <div class="image-preview" style="display: flex; justify-content: center;">
-             {% if profile_picture %}
+             {% if role_info.profile_picture %}
                <img id="currentImg" src="{{ role_info.profile_picture.url }}" alt="Current Profile Picture" style="width: 150px; height: 150px; object-fit: cover;">
              {% else %}
                <img id="currentImg" src="{% static 'images/default-profile.jpg' %}" alt="No Profile Picture" style="width: 150px; height: 150px; object-fit: cover;">
              {% endif %}
          </div>
-         <p>Update Picture</p>
+         <p>Update Profile Picture</p>
          <input type="file" accept="image/*" name="profile_pic" class="box" id="imgInput" onchange="previewImage()">
 
          <input type="submit" value="update profile" name="submit" class="btn">
@@ -341,7 +370,7 @@ section {
 
       // Logout Button Functionality
       document.getElementById('logoutButton').addEventListener('click', function () {
-         e.preventDefault(); 
+         e.preventDefault();
          const notification = document.getElementById('notification');
          notification.classList.add('show');
 
@@ -350,26 +379,26 @@ section {
          }, 3000);
 
          setTimeout(() => {
-             document.getElementById('logoutForm').submit(); 
+             document.getElementById('logoutForm').submit();
          }, 1000);
      });
 
       function previewImage() {
-         var file = document.getElementById("imgInput").files[0]; 
-         var preview = document.getElementById("newImgPreview"); 
-     
+         var file = document.getElementById("imgInput").files[0];
+         var preview = document.getElementById("newImgPreview");
+
          if (file) {
              var reader = new FileReader();
-     
+
              reader.onload = function(e) {
                  preview.src = e.target.result;
                  preview.style.display = "block";
              }
-     
-             reader.readAsDataURL(file);  
+
+             reader.readAsDataURL(file);
          }
      }
-     
+
 
    </script>
 

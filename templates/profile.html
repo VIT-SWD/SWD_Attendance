@@ -103,8 +103,8 @@
                {% url 'login' %}
            {% endif %}">
             <i class="fas fa-home"></i><span>home</span></a>
-         <a href="#" style="color: #888888;"><i class="fas fa-calendar-alt"></i>Events</a>
-         <a href="#" id="contact"><i class="fas fa-headset"></i><span>contact us</span></a>
+         <!--<a href="#" style="color: #888888;"><i class="fas fa-calendar-alt"></i>Events</a>-->
+         <a href="#" id="contact"><i class="fas fa-headset"></i><span>Contact Us</span></a>
          <form id="logoutForm" method="POST" action="{% url 'logout_view' %}">
             {% csrf_token %}
             <button type="submit" id="logoutButton" class="logout-btn" style="position: absolute; top: 85%; left: 30%;">
@@ -122,7 +122,7 @@
             <img
                src="{% if user.profile.image %}{{ user.profile.image.url }}{% else %}{% static 'images/default-profile.jpg' %}{% endif %}"
                class="image" alt="user-image">
-            <h3 class="name">{{ user.username }}</h3>
+            <h3 class="name">{{ user.last_name }}</h3>
             <p class="role">
                {% if role_info %}
                {{ role_info.role }}
@@ -131,9 +131,9 @@
                {% endif %}
             </p>
             <div style="border-bottom: 1.5px solid #ccc;"></div>
-            <p>Email: {{ role_info.user.email }}</p>
+            <p>Email: {{ role_info.user.username }}</p>
             <p>Gender: {{ role_info.gender }}</p>
-            <p>Department: {{ role_info.department }}</p>
+            <p>Department: {{ role_info.dept }}</p>
             <p>DIV: {{ role_info.div }}</p>
             <p>PRN: {{ role_info.prn }}</p>
             <p>Contact: {{ role_info.contact_num }}</p>

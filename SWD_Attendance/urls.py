@@ -9,11 +9,13 @@ from secretary import views as s_views
 from volunteer import views as v_views
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
+    path('sasadmin/', admin.site.urls),
+    path('admin/', include('admin_honeypot.urls')),
+    # path('admin/', admin.site.urls),
     path('', views.home, name="home"),
     path('profile/', views.profile, name="profile"),
     path('update/', views.update, name="update"),
-    path('update_profile/', views.update_profile, name="update_profile"),    
+    path('update_profile/', views.update_profile, name="update_profile"),
     path('coordinator/', include('coordinator.urls')),
     path('userlogin/', include('authentication.urls')),
     path('usersignup/', auth_views.signup_view, name="usersignup"),
@@ -25,4 +27,6 @@ urlpatterns = [
     path('mark-attendance/', v_views.MarkAttendanceView.as_view(), name='mark_attendance'),
     path('view_attendance/', v_views.view_attendance, name='view_attendance'),
     path('download-attendance/', s_views.download_attendance, name='download_attendance'),
+    path('action/', include('action.urls')),
+    path('auth/', include('authentication.urls')),
 ] + static(settings.MEDIA_URL, document_root = settings.MEDIA_ROOT)

@@ -10,6 +10,12 @@ from django.conf import settings
 
 @login_required(login_url='userlogin')
 def coordinator(request):
+    coordinator = Coordinator.objects.get(user=request.user)
+
+    if request.method == 'POST':
+        coordinator.domain = request.POST.get('domain')
+        coordinator.save()
+
     socialServices = []
     flagships = []
 
@@ -20,30 +26,34 @@ def coordinator(request):
             else:
                 socialServices.append(activity)
 
-    coordinator = Coordinator.objects.get(user=request.user)
     return render(request, 'coordinators.html', {'coordinator': coordinator, 'CURR_YEAR': settings.CURR_YEAR, 'CURR_SEM': settings.CURR_SEM, 'socialServices': socialServices, 'flagships': flagships})
 
 @login_required(login_url='userlogin')
-def generate_and_save_qr(request):    
+def generate_and_save_qr(request):
     if request.method == 'POST':
         if request.POST.get('activity'):
             activity = request.POST.get('activity')
         else:
             activity = request.POST.get('flagship')
-        
+
         coordinator = get_object_or_404(Coordinator, user=request.user)
-        
+
         if request.POST.get('activity'):
             coordinator.activity = activity
+
+            # for dom, acts in settings.DOMAINS.items():
+            #     if activity in acts:
+            #         coordinator.domain = dom
+            #         break
         else:
             coordinator.flagshipEvent = activity
         coordinator.save()
-        
+
         prn = coordinator.prn
         name = coordinator.cname
         if not prn:
             return HttpResponse("PRN not found", status=400)
-        
+
         qr = qrcode.QRCode(
             version=5,
             box_size=10,
@@ -58,15 +68,15 @@ def generate_and_save_qr(request):
 
         filename = f"{prn}_{activity}.png"
         if request.POST.get('activity'):
-            qr_codes_dir = os.path.join(settings.STATIC_URL, 'qr_codes/Social_Services/')
+            qr_codes_dir = os.path.join(settings.MEDIA_ROOT, 'qr_codes/Social_Services/')
         else:
-            qr_codes_dir = os.path.join(settings.STATIC_URL, 'qr_codes/Flagship/')
+            qr_codes_dir = os.path.join(settings.MEDIA_ROOT, 'qr_codes/Flagship/')
 
         if not os.path.exists(qr_codes_dir):
-            os.makedirs(qr_codes_dir)
+            os.makedirs(qr_codes_dir, exist_ok=True, mode=0o777)
 
         filepath = os.path.join(qr_codes_dir, filename)
-        
+
         img.save(filepath)
 
         with open(filepath, 'rb') as img_file:

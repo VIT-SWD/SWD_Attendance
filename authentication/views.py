@@ -3,11 +3,13 @@ from django.contrib.auth import login as auth_login, logout, authenticate
 from django.shortcuts import render, redirect
 from django.core.exceptions import ValidationError
 from django.core.validators import validate_email
-from django.contrib import messages  
+from django.contrib import messages
 from django.contrib.auth.models import User
 from .models import Volunteer, Coordinator, Secretary
 import re
 from django.conf import settings
+from django.core.mail import send_mail
+from SWD_Attendance.settings import EMAIL_HOST_USER
 
 def logout_view(request):
     logout(request)
@@ -29,7 +31,7 @@ def role_based_login(request):
 
         if user is not None:
             auth_login(request, user)  # Log in the user
-            
+
             role = user.first_name
             # if hasattr(user, 'coordinator'):
             #     role = 'Coordinator'
@@ -57,7 +59,7 @@ def role_based_login(request):
 def signup_view(request):
     errors = {}
     form_data = {}
-    
+
     if request.method == 'POST':
         form_data = request.POST
         name = request.POST.get('username')
@@ -77,7 +79,7 @@ def signup_view(request):
             validate_email(email)
         except ValidationError:
             errors['email'] = "Invalid email format."
-        
+
         if email.split('@')[1] != 'vit.edu':
             errors['email'] = "Email must be a VIT email."
 
@@ -98,7 +100,7 @@ def signup_view(request):
             errors['div'] = "Division must be a single character."
         else:
             vol_domain = department + '-' + div
-            if vol_domain not in settings.DOMAIN_ALLOTMENT.keys():
+            if role == 'Volunteer' and vol_domain not in settings.DOMAIN_ALLOTMENT.keys():
                 errors['div'] = "Your division hasn't been allotted a domain yet."
 
         if not contact.isdigit() or len(contact) != 10:
@@ -108,7 +110,7 @@ def signup_view(request):
             errors['password'] = "Passwords do not match."
         else:
             password_regex = re.compile(r'^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$')
-    
+
             if not password_regex.match(password1):
                 errors['password'] = ("Password must be at least 8 characters long, "
                                     "and include at least one uppercase letter, "
@@ -118,7 +120,7 @@ def signup_view(request):
         for field in required_fields:
             if not request.POST.get(field):
                 errors[field] = "This field is required."
-        
+
         if User.objects.filter(username=email).exists():
             errors['email'] = "Email already in use."
 
@@ -183,3 +185,54 @@ def signup_view(request):
 
 def login(request):
     return render(request, 'update.html')
+
+def ForgetPassword(request):
+    if request.method == "POST":
+        email = request.POST.get('email')
+        print("Email: ",email)
+        if User.objects.filter(username=email).exists():
+            user=User.objects.get(username=email)
+            # print("User Exists")
+            # send_mail("Reset your account password for Smart Attendance System", f"Hey {user}! To reset your password click on the given link https://swdsmartattendancesystem.pythonanywhere.com/auth/newpasswordpage/{user}", EMAIL_HOST_USER, [email],fail_silently=True)
+            send_mail(
+                "Password Reset Request for Smart Attendance System",
+                f"Dear {user.last_name},\n\n"
+                "We received a request to reset the password for your account associated with the Smart Attendance System. "
+                "To reset your password, please click the link below:\n\n"
+                f"https://swdsmartattendancesystem.pythonanywhere.com/auth/newpasswordpage/{user}\n\n"
+                "If you did not request a password reset, please ignore this email, and no changes will be made to your account.\n\n"
+                "Best regards,\n"
+                "Social Welfare and Development Committee",
+                EMAIL_HOST_USER,
+                [email],
+                fail_silently=True
+            )
+            messages.error(request, "Password reset link has been sent to your email.")
+
+        return render(request, 'forget_password.html')
+
+    return render(request, 'forget_password.html')
+
+def NewPasswordPage(request, user):
+    errors = {}
+    userid=User.objects.get(username=user)
+    print("UserId: ",userid)
+    if request.method == 'POST':
+        pass1 = request.POST.get('password1')
+        pass2 = request.POST.get('password2')
+
+        if pass1 != pass2:
+            messages.error(request, "Passwords do not match.")
+            return redirect('new_password', user=user)
+
+        password_regex = re.compile(r'^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$')
+
+        if not password_regex.match(pass1):
+            messages.error(request, "Password must be at least 8 characters long, and include at least one uppercase letter, one lowercase letter, one digit, and one special character.")
+            return redirect('new_password', user=user)
+
+        userid.set_password(pass1)
+        userid.save()
+        return redirect('userlogin')
+
+    return render(request, 'new_password.html')

@@ -24,13 +24,15 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-f7!_bb*67rwd-)&7=zbz%jxhb*ftci6adg$)lue4g7ms0ebf8+'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = ['*']
 
 # Application definition
 
 INSTALLED_APPS = [
+    #'jazzmin',
+    'admin_honeypot',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -52,6 +54,8 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'django.contrib.sessions.middleware.SessionMiddleware',
+    'django_session_timeout.middleware.SessionTimeoutMiddleware',
 ]
 
 ROOT_URLCONF = 'SWD_Attendance.urls'
@@ -110,7 +114,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Asia/Kolkata'
 
 USE_I18N = True
 
@@ -121,10 +125,13 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
 STATIC_URL = 'static/'
-STATICFILES_DIRS = [os.path.join(BASE_DIR, "static")]
+# STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+STATIC_ROOT = 'static'
+#STATICFILES_DIRS = [os.path.join(BASE_DIR, "static")]
 
 MEDIA_URL = '/media/'
-MEDIA_ROOT = os.path.join(BASE_DIR, "static")
+MEDIA_ROOT = "/home/swdsmartattendancesystem/SWD_Attendance/media/"
+# MEDIA_ROOT = 'media'
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
@@ -173,8 +180,6 @@ DOMAIN_ALLOTMENT = {
     "CSCBI-A": "Environmental Sustainability, Cleanliness, and Awareness",
     "CSCBI-B": "Environmental Sustainability, Cleanliness, and Awareness",
     "CSCBI-C": "Environmental Sustainability, Cleanliness, and Awareness",
-    "CSDS-A": "Community Development, Social Support & Awareness",
-    "CSDS-B": "Community Development, Social Support & Awareness",
 }
 
 # Activity Domains
@@ -187,20 +192,32 @@ DOMAINS = {
 
 #Activity Status
 ACTIVITIES = {
-    "Aashakiran": False,
+    "Aashakiran": True,
     "Matadhikar": True,
-    "Muskaan": False,
-    "Udaan": False,
-    "Utkarsh": False,
-    "Saksham": False,
-    "Aavishkar":False,
-    "Vatsalya":False,
-    "Aadhar":False,
-    "Swaccha Pune":False,
-    "Go Green":False,
+    "Muskaan": True,
+    "Udaan": True,
+    "Utkarsh": True,
+    "Saksham": True,
+    "Aavishkar":True,
+    "Vatsalya":True,
+    "Aadhar":True,
+    "Swaccha Pune":True,
+    "Go Green":True,
     "Night Patrolling":False,
-    "Animal Rescur":False,
+    "Animal Rescue":False,
     "Lilliput":False,
 }
 
+
 FLAGSHIPS = ["Blood-D", "Utkarsh"]
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_HOST_USER = 'vitswd@vit.edu'
+EMAIL_HOST_PASSWORD = 'ghzmisplhdhyuppd'
+EMAIL_USE_TLS = True
+EMAIL_USE_SSL = False
+
+SESSION_EXPIRE_SECONDS = 600
+SESSION_TIMEOUT_REDIRECT = 'https://swdsmartattendancesystem.pythonanywhere.com/auth/'
