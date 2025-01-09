@@ -12,15 +12,43 @@ from django.conf import settings
 import math
 import geopy.distance
 from django.utils.timezone import localtime
+import json
+import requests
+from django.core.files.storage import default_storage
+from django.core.files.base import ContentFile
 
 @login_required(login_url='userlogin')
 def volunteer(request):
     volunteer = get_object_or_404(Volunteer, user=request.user)
+
+    if request.method == 'POST':
+        volunteer.roll = request.POST.get('roll')
+        volunteer.save()
+
     activities = [activity for activity in settings.DOMAINS[volunteer.domain] if settings.ACTIVITIES[activity]]
 
     today = datetime.now().date()
-    activity_name = volunteer.activity
-    events = Activity.objects.filter(name=activity_name, date=today)
+
+    if today.strftime("%d-%m-%Y") in volunteer.attendance:
+        activity_name = volunteer.activity
+        idx = 1
+
+        if settings.GROUPS[activity_name]:
+            for group in settings.GROUPS[activity_name]:
+                min_roll, max_roll = group.split('-')
+                min_roll = int(min_roll)
+                max_roll = int(max_roll)
+
+                if volunteer.roll >= min_roll and volunteer.roll <= max_roll:
+                    div = volunteer.dept + '-' + volunteer.div + '-' + str(idx)
+                    events = Activity.objects.filter(name=activity_name, date=today, divisions__icontains=div)
+                    break
+                idx += 1
+        else:
+            div = volunteer.dept + '-' + volunteer.div
+            events = Activity.objects.filter(name=activity_name, date=today, divisions__icontains=div)
+    else:
+        events = []
 
     return render(request, 'volunteers.html', {'volunteer': volunteer, 'CURR_YEAR': settings.CURR_YEAR, 'CURR_SEM': settings.CURR_SEM, 'activities': activities, 'events': events})
 
@@ -32,6 +60,25 @@ def allot_activity(request):
         volunteer.activity = activity
         volunteer.save()
     return redirect('volunteer')
+
+def refresh_access_token():
+    global ACCESS_TOKEN
+    data = {
+        "client_id": CLIENT_ID,
+        "client_secret": CLIENT_SECRET,
+        "refresh_token": REFRESH_TOKEN,
+        "grant_type": "refresh_token"
+    }
+
+    response = requests.post(TOKEN_URL, data=data)
+    response_data = response.json()
+
+    if "access_token" in response_data:
+        ACCESS_TOKEN = response_data["access_token"]
+        print("Access token refreshed!")
+    else:
+        print("Failed to refresh access token:", response_data)
+        raise Exception("Token refresh failed")
 
 @method_decorator(csrf_exempt, name='dispatch')
 class MarkAttendanceView(LoginRequiredMixin, View):
@@ -51,6 +98,19 @@ class MarkAttendanceView(LoginRequiredMixin, View):
             venue = request.POST.get('venue')
 
             volunteer = Volunteer.objects.get(user=request.user)
+
+            if geo_photo:
+                temp_photo_path = default_storage.save(geo_photo.name, ContentFile(geo_photo.read()))
+                print("File saved at:", temp_photo_path)
+
+                # Upload to Google Drive
+                file_url = self.upload_to_google_drive(default_storage.path(temp_photo_path), temp_photo_path)
+                # print(file_url)
+
+                # Delete the temporary file
+                default_storage.delete(temp_photo_path)
+            else:
+                return JsonResponse({'error': 'Geo photo is required.'}, status=400)
 
             # current_time = datetime.now().time()
             # today = datetime.now().date()
@@ -86,7 +146,7 @@ class MarkAttendanceView(LoginRequiredMixin, View):
                     )
                     print(distance)
 
-                    # Ensure volunteer is within 1.5 km range
+                    # Ensure volunteer is within 1 km range
                     if distance > 1:
                         error = "You are too far from the activity location to mark attendance."
                         continue
@@ -100,17 +160,30 @@ class MarkAttendanceView(LoginRequiredMixin, View):
                         # volunteer.attendance += f"{attendance}, "
                         volunteer.save()
 
-                        Attendance.objects.create(
-                            coord_prn=coord_prn,
-                            coord_name=coord_name,
-                            activity=activity_name,
-                            vol_name=vol_name,
-                            vol_prn=vol_prn,
-                            actual_latitude=actual_latitude,
-                            actual_longitude=actual_longitude,
-                            geo_photo=geo_photo,
-                            time=datetime.now()
-                        )
+                        if file_url == "error":
+                            Attendance.objects.create(
+                                coord_prn=coord_prn,
+                                coord_name=coord_name,
+                                activity=activity_name,
+                                vol_name=vol_name,
+                                vol_prn=vol_prn,
+                                actual_latitude=actual_latitude,
+                                actual_longitude=actual_longitude,
+                                geo_photo=geo_photo,
+                                time=datetime.now()
+                            )
+                        else:
+                            Attendance.objects.create(
+                                coord_prn=coord_prn,
+                                coord_name=coord_name,
+                                activity=activity_name,
+                                vol_name=vol_name,
+                                vol_prn=vol_prn,
+                                actual_latitude=actual_latitude,
+                                actual_longitude=actual_longitude,
+                                geo_photo=file_url,
+                                time=datetime.now()
+                            )
                         return JsonResponse({'message': 'In-time attendance marked successfully!'}, status=200)
                     else:
                         error = f'Current time is outside the in-time attendance window. {in_time_window_start} - {in_time_window_end} - {activity.venue} - {current_time}'
@@ -118,7 +191,7 @@ class MarkAttendanceView(LoginRequiredMixin, View):
                         # return JsonResponse({'error': 'Current time is outside the in-time attendance window.'}, status=400)
                 else:
                     # Out-Time Attendance
-                    if current_time >= out_time_window_start or current_time <= out_time_window_end:
+                    if current_time >= out_time_window_start and current_time <= out_time_window_end:
                         volunteer.attendance = volunteer.attendance[:-13] + "$" + volunteer.attendance[-12:]
                         volunteer.marked_IN_attendance = False
                         volunteer.save()
@@ -144,6 +217,32 @@ class MarkAttendanceView(LoginRequiredMixin, View):
 
     def get(self, request, *args, **kwargs):
         return JsonResponse({'error': 'GET method not allowed.'}, status=405)
+
+    def upload_to_google_drive(self, file_path, file_name):
+        access_token = "ya29.a0ARW5m76VxZxdp9AZGNvvyVQ3lAIhh9vRT1LQVW4YblokPir2J4LlGd56sPnDrT_fV_vauhqZRXMMZHTBpbirO0YbCe24_mNG4Q9T_9CxX544c00q52wXIcBRIC-mNv3sYAjs7LIdJ5VSKyU5j_QjDRa0wPpnbCjA4dOncWMBaCgYKAbQSARISFQHGX2Mifx6DvyDdoBYNUc1mv7uOfg0175"
+        folder_id = "1PeqgokhAoqYXCQ08jYjtXXFwMEiB-Xq2"  # Replace with drive folder ID
+
+        headers = {"Authorization": f"Bearer {access_token}"}
+        para = {
+            "name": file_name,
+            "parents": [folder_id]
+        }
+        files = {
+            "data": ("metadata", json.dumps(para), "application/json; charset=UTF-8"),
+            "file": open(file_path, "rb")
+        }
+        response = requests.post(
+            "https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart",
+            headers=headers,
+            files=files
+        )
+
+        if response.status_code == 200:
+            file_id = response.json().get('id')
+            return f"https://drive.google.com/file/d/{file_id}/view"
+        else:
+            # raise Exception(f"Failed to upload to Google Drive: {response.text}")
+            return "error"
 
 # def calculate_distance(lat1, lon1, lat2, lon2):
 #     lat1_rad = math.radians(lat1)

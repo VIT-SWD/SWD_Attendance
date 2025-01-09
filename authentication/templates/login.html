@@ -317,6 +317,13 @@
                 {% endif %}
             </div>
             <div class="input-group">
+                <i class="fas fa-id-card icon-left text-icon"></i>
+                <input type="number" name="roll" min=1 max=99 placeholder="Roll Number" value="{{ form_data.roll }}" required>
+                {% if errors.roll %}
+                    <small class="error">{{ errors.roll }}</small>
+                {% endif %}
+            </div>
+            <div class="input-group">
                 <i class="fas fa-phone icon-left text-icon"></i>
                 <input type="tel" name="contact" placeholder="Contact Number" value="{{ form_data.contact }}" required>
                 {% if errors.contact %}

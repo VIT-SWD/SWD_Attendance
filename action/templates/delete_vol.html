@@ -30,5 +30,11 @@
         <input type="email" name="email" placeholder="Enter volunteer email">
         <button type="submit">View Volunteer</button>
     </form>
+
+    <h1>Delete Past Attendance</h1>
+    <form action="{% url 'deleteAttendance' %}" method="post">
+        {% csrf_token %}
+        <button type="submit">Delete Attendance</button>
+    </form>
 </body>
 </html>

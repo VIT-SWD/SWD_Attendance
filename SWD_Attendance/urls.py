@@ -10,7 +10,7 @@ from volunteer import views as v_views
 
 urlpatterns = [
     path('sasadmin/', admin.site.urls),
-    path('admin/', include('admin_honeypot.urls')),
+    # path('admin/', include('admin_honeypot.urls')),
     # path('admin/', admin.site.urls),
     path('', views.home, name="home"),
     path('profile/', views.profile, name="profile"),

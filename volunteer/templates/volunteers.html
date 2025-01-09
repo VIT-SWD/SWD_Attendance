@@ -165,6 +165,16 @@ form#attendanceForm input[type="text"],
         <h1 style="font-size: 19px; font-weight: bold;"  >Welcome To SW&D's Smart Attendance System</h1>
         <p style="font-size: 14px;">WE WORK FOR THE BETTERMENT<br>OF THE SOCIETY</p>
       </div>
+
+      <br/>
+
+      {% if not volunteer.roll %}
+            <form method="POST" action="">
+                {% csrf_token %}
+                <input type="number" name="roll" id="activitySelect" class="activity-select" placeholder="Enter your Roll Number" required>
+                <button class="dashboard-btn" type="submit">Submit Roll Number</button>
+            </form>
+        {% endif %}
    </div>
 
    <div class="container" id="Activity" style="display: none;">
@@ -255,11 +265,13 @@ form#attendanceForm input[type="text"],
          <h1 style="padding-top: 3%; text-align: center;">Take a Geotagged Photo</h1>
         <br>
 
+        <button id="start-camera">Start Camera</button><br><br>
+
         <div style="display: flex; justify-content: center;">
             <video style="width:85%; display: none;" id="video" autoplay></video>
         </div>
         <canvas id="canvas" style="display:none;"></canvas><br><br>
-        <button id="start-camera">Start Camera</button><br><br>
+
         <button type="button" id="capture-btn" style="cursor: pointer;">Take Photo</button><br>
         <img id="photo" alt="Your captured photo will appear here" style="display: block; margin: 20px auto; max-width: 100%; align-items:center;"/>
         <input type="hidden" id="geo_photo" name="geo_photo">
@@ -274,7 +286,7 @@ form#attendanceForm input[type="text"],
                 {% endfor %}
             {% else %}
                 <option value="">No venues available</option>
-                <option value="temp">temp</option>
+                <!--<option value="temp">temp</option>-->
             {% endif %}
         </select>
 
@@ -695,6 +707,7 @@ function startQRScanner() {
                }, err => {
                    console.error('Error getting location: ', err);
                    coordinates.innerText = 'Could not retrieve location';
+                   alert('Could not retrieve location!')
                });
            } else {
                coordinates.innerText = 'Geolocation is not supported by your browser';
@@ -728,6 +741,7 @@ function startQRScanner() {
        })
        .catch(error => {
            console.error('Error:', error);
+           alert(error);
        });
    }
 </script>

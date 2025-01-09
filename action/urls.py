@@ -6,4 +6,5 @@ urlpatterns = [
     path('deleteVol/', views.deleteVolunteer, name='deleteVol'),
     path('onlyVolunteer/', views.onlyVolunteer, name='deleteOnlyVolunteer'),
     path('viewVolunteer/', views.viewVolunteer, name='viewVolunteer'),
+    path('deleteAttendance/', views.deleteAttendance, name='deleteAttendance')
 ]

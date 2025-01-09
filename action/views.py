@@ -1,6 +1,7 @@
 from django.shortcuts import render
-from authentication.models import Volunteer
+from authentication.models import Volunteer, Activity
 from django.contrib.auth.models import User
+from datetime import date
 
 VERIFICATION_CODE = '202320242025'
 
@@ -45,4 +46,22 @@ def viewVolunteer(request):
             return render(request, 'delete_vol.html', {'message': volunteer.vname + ' found'})
         except:
             return render(request, 'delete_vol.html', {'message': 'Volunteer does not exist'})
+    return render(request, 'delete_vol.html')
+
+def deleteAttendance(request):
+    if request.method == 'POST':
+        cutoff_date = date(2024, 12, 31)
+        activities_to_delete = Activity.objects.filter(date__lte=cutoff_date)
+        activities_to_delete.delete()
+
+        volunteers = Volunteer.objects.all()
+
+        for vol in volunteers:
+            if '2025' in vol.attendance:
+                vol.attendance = vol.attendance.split('2024, ')[-1]
+            else:
+                vol.attendance = ''
+            vol.save()
+
+        return render(request, 'delete_vol.html', {'message': 'Attendance deleted successfully!'})
     return render(request, 'delete_vol.html')

@@ -74,6 +74,7 @@ def signup_view(request):
         password1 = request.POST.get('password1')
         password2 = request.POST.get('password2')
         year = email.split('@')[0][-3:-1] if email.split('@')[0][-3:].isdigit() else email.split('@')[0][-2:]
+        roll = request.POST.get('roll')
 
         try:
             validate_email(email)
@@ -95,6 +96,9 @@ def signup_view(request):
 
         if not prn.isdigit() or len(prn) != 8:
             errors['prn'] = "PRN must be 8 digits."
+
+        if not roll.isdigit() or (int(roll) < 1 and int(roll) > 99):
+            errors['roll'] = "Roll Number must be between 1 to 99."
 
         if len(div) != 1 or not div.isalpha():
             errors['div'] = "Division must be a single character."
@@ -208,6 +212,8 @@ def ForgetPassword(request):
                 fail_silently=True
             )
             messages.error(request, "Password reset link has been sent to your email.")
+        else:
+            messages.error(request, "This email address is not registered. Please sign up!")
 
         return render(request, 'forget_password.html')
 

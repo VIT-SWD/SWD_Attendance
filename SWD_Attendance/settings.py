@@ -24,7 +24,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-f7!_bb*67rwd-)&7=zbz%jxhb*ftci6adg$)lue4g7ms0ebf8+'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
 ALLOWED_HOSTS = ['*']
 
@@ -32,7 +32,7 @@ ALLOWED_HOSTS = ['*']
 
 INSTALLED_APPS = [
     #'jazzmin',
-    'admin_honeypot',
+    # 'admin_honeypot',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -190,6 +190,41 @@ DOMAINS = {
     "Community Development, Social Support & Awareness": ["Night Patrolling", "Animal Rescue","Lilliput"],
 }
 
+#Activity Divisions
+DIVISIONS = {
+    "Utkarsh": ["CS-J", "CS-K"],
+    "Matadhikar": ["CS-A", "CS-B", "CS-C", "CS-D"],
+    "Muskaan": ["CSSE-C"],
+    "Udaan": ["CSDS-A"],
+    "Saksham": ["CSDS-B"],
+    "Aashakiran": ["CS-L", "IT-F"],
+    "Aavishkar": ["CSDS-C", "CS-I"],
+    "Vatsalya": ["IT-E"],
+    "Aadhar": ["CSSE-A", "CSSE-B"],
+    "Swaccha Pune": ["CS-E", "CS-F", "CS-G", "CS-H", "IC-A", "IC-B", "IC-C"],
+    "Go Green": ["IT-A", "IT-B", "IT-C", "IT-D", "CSCBI-A", "CSCBI-B", "CSCBI-C"],
+    "Night Patrolling": ["CSDS-A"],
+    "Lilliput": [],
+    "Animal Rescue": [],
+}
+
+GROUPS = {
+    "Utkarsh": ["1-15", "16-30", "31-45", "46-60", "61-78"],
+    "Matadhikar": ["1-15", "16-30", "31-45", "46-60"],
+    "Muskaan": [],
+    "Udaan": [],
+    "Saksham": [],
+    "Aashakiran": [],
+    "Aavishkar": ["1-26", "27-54", "55-78"],
+    "Vatsalya": ["1-11", "12-22", "23-33", "34-44", "45-55", "56-66", "67-77"],
+    "Aadhar": [],
+    "Swaccha Pune": [],
+    "Go Green": [],
+    "Night Patrolling": []
+    # "Lilliput": [],
+    # "Animal Rescue": [],
+}
+
 #Activity Status
 ACTIVITIES = {
     "Aashakiran": True,
@@ -215,7 +250,7 @@ EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_HOST_USER = 'vitswd@vit.edu'
-EMAIL_HOST_PASSWORD = 'ghzmisplhdhyuppd'
+EMAIL_HOST_PASSWORD = 'wgvwtstogrdtihml'
 EMAIL_USE_TLS = True
 EMAIL_USE_SSL = False
 

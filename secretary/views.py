@@ -4,7 +4,8 @@ import requests, openpyxl, re
 from authentication.models import Activity, Secretary, Volunteer
 from django.contrib.auth.decorators import login_required
 from django.conf import settings
-from datetime import datetime
+from datetime import datetime, date
+import json
 
 @login_required(login_url='userlogin')
 def secretaryView(request):
@@ -36,8 +37,19 @@ def secretaryView(request):
         secretary.save()
     else:
         secretary = get_object_or_404(Secretary, user=request.user)
-    # print(settings.CURR_YEAR, settings.CURR_SEM)
-    return render(request, 'secretary.html', {'secretary': secretary, 'CURR_YEAR': settings.CURR_YEAR, 'CURR_SEM': settings.CURR_SEM, 'socialServices': socialServices, 'flagships': flagships})
+
+    #filtering events for show event functionality
+    # cutoff_date = date(2024, 12, 1)
+    cutoff_date = date.today()
+    events = []
+
+    if secretary.activity:
+        events.extend(Activity.objects.filter(name=secretary.activity, date__gte=cutoff_date))
+
+    if secretary.flagshipEvent:
+        events.extend(Activity.objects.filter(name=secretary.flagshipEvent, date__gte=cutoff_date))
+
+    return render(request, 'secretary.html', {'secretary': secretary, 'CURR_YEAR': settings.CURR_YEAR, 'CURR_SEM': settings.CURR_SEM, 'socialServices': socialServices, 'flagships': flagships, 'events': events})
 
 @login_required(login_url='userlogin')
 def add_activity(request):
@@ -51,6 +63,7 @@ def add_activity(request):
         description = request.POST.get('description')
         mode = request.POST.get('mode')
         venue = request.POST.get('venue')
+        divisions = request.POST.getlist('divisions')
         # print(eventDate)
 
         # Extract coordinates from the map_link using regex
@@ -75,14 +88,30 @@ def add_activity(request):
             latitude=float(latitude) if latitude else None,
             longitude=float(longitude) if longitude else None,
             isOnline = True if mode == 'online' else False,
-            venue = venue
+            venue = venue,
+            divisions = str(divisions)[1:-1].replace("'", "")
         )
         new_activity.save()
 
-        volunteers = Volunteer.objects.filter(activity=activity)
-        for volunteer in volunteers:
-            volunteer.attendance += f"#{eventDate.strftime('%d-%m-%Y')}" + ", "
-            volunteer.save()
+        for div in divisions:
+            if div.count('-') == 1:
+                dept, division = div.split('-')
+                volunteers = Volunteer.objects.filter(activity=activity, div=division, dept=dept)
+                for volunteer in volunteers:
+                    volunteer.attendance += f"#{eventDate.strftime('%d-%m-%Y')}" + ", "
+                    volunteer.save()
+            else:
+                dept, division, group = div.split('-')
+                group = int(group) - 1
+
+                min_roll, max_roll = settings.GROUPS[activity][group].split('-')
+                min_roll = int(min_roll)
+                max_roll = int(max_roll)
+
+                volunteers = Volunteer.objects.filter(activity=activity, div=division, dept=dept, roll__range=(min_roll, max_roll))
+                for volunteer in volunteers:
+                    volunteer.attendance += f"#{eventDate.strftime('%d-%m-%Y')}" + ", "
+                    volunteer.save()
 
         return redirect('secretary')
 
@@ -110,6 +139,36 @@ def expand_url(short_url):
         print(f"Error expanding URL: {e}")
         return short_url
 
+def activityDivisions(request):
+    if request.method == 'POST':
+        secretary = Secretary.objects.get(user=request.user)
+        divisions = []
+
+        if secretary.activity:
+            if len(settings.GROUPS[secretary.activity]) == 0:
+                for div in settings.DIVISIONS[secretary.activity]:
+                    divisions.append(div)
+            else:
+                for div in settings.DIVISIONS[secretary.activity]:
+                    cnt = 1
+                    for group in settings.GROUPS[secretary.activity]:
+                        divisions.append(div + '-' + str(cnt))
+                        cnt += 1
+
+        if secretary.flagshipEvent:
+            if len(settings.GROUPS[secretary.flagshipEvent]) == 0:
+                for div in settings.DIVISIONS[secretary.flagshipEvent]:
+                    divisions.append(div)
+            else:
+                for div in settings.DIVISIONS[secretary.flagshipEvent]:
+                    cnt = 1
+                    for group in settings.GROUPS[secretary.flagshipEvent]:
+                        divisions.append(div + '-' + str(cnt))
+                        cnt += 1
+
+        return JsonResponse({'divisions': divisions})
+    else:
+        return JsonResponse({'error': 'Invalid request method'}, status=400)
 
 def download_attendance(request):
     if request.method == 'POST':
@@ -131,16 +190,24 @@ def download_attendance(request):
         #         all_dates.add(date)
 
         # sorted_dates = sorted(all_dates, key=lambda x: x)
-        all_dates = []
-        for volunteer in volunteers:
-            attendance_dates = volunteer.attendance.split(', ')
-            for date_entry in attendance_dates:
-                if len(date_entry) > 1:  # Ensure the entry is not empty and valid
-                    date = date_entry[1:]  # Extract the date, assuming it starts with a special character
-                    all_dates.append(date)
+        # all_dates = []
+        # if volunteers:
+        #     attendance_dates = volunteers[0].attendance.split(', ')
+        #     for date_entry in attendance_dates:
+        #         if len(date_entry) > 1:  # Ensure the entry is not empty and valid
+        #             date = date_entry[1:]  # Extract the date, assuming it starts with a special character
+        #             all_dates.append(date)
 
-        sorted_dates = sorted(all_dates, key=lambda x: x)
-        headers.extend(sorted_dates)
+        all_dates = []
+        events = Activity.objects.filter(name=activity_name)
+
+        for event in events:
+            evt_date = '-'.join(str(event.date).split('-')[::-1])
+            if evt_date not in all_dates:
+                all_dates.append(evt_date)
+
+        # sorted_dates = sorted(all_dates, key=lambda x: x)
+        headers.extend(all_dates)
 
         for col_num, header in enumerate(headers, 1):
             sheet.cell(row=1, column=col_num, value=header)
@@ -152,13 +219,24 @@ def download_attendance(request):
             sheet.cell(row=row_num, column=4, value=volunteer.contact_num)
 
             attendance_status = {}
-            attendance_entries = volunteer.attendance.split(', ')
-            for entry in attendance_entries:
-                status = 'Present' if entry.startswith('$') else 'Absent'
-                date = entry[1:]
-                attendance_status[date] = status
+            attendance = volunteer.attendance
+            # for entry in attendance_entries:
+            #     status = 'Present' if entry.startswith('$') else 'Absent'
+            #     date = entry[1:]
+            #     attendance_status[date] = status
+            for entry in all_dates:
+                idx = attendance.find(entry)
 
-            for col_num, date in enumerate(sorted_dates, start=5):
+                if idx == -1:
+                    status = 'NA'
+                elif attendance[idx-1] == '$':
+                    status = 'Present'
+                else:
+                    status = 'Absent'
+
+                attendance_status[entry] = status
+
+            for col_num, date in enumerate(all_dates, start=5):
                 sheet.cell(row=row_num, column=col_num, value=attendance_status.get(date, 'Absent'))
 
         response = HttpResponse(
