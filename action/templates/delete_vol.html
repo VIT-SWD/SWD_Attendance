@@ -36,5 +36,11 @@
         {% csrf_token %}
         <button type="submit">Delete Attendance</button>
     </form>
+
+    <h1>Download Coord Attendance</h1>
+    <form action="{% url 'coordAttendance' %}" method="post">
+        {% csrf_token %}
+        <button type="submit">Download Attendance</button>
+    </form>
 </body>
 </html>

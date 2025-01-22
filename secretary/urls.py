@@ -4,5 +4,7 @@ from . import views
 urlpatterns = [
     path('', views.secretaryView, name='secretary'),
     path('download-attendance/', views.download_attendance, name='download_attendance'),
-    path('fetch-div/', views.activityDivisions, name='fetch_div')
+    path('fetch-div/', views.activityDivisions, name='fetch_div'),
+    path('updateEvent/', views.updateEvent, name='updateEvent'),
+    path('deleteEvent/', views.deleteEvent, name='deleteEvent'),
 ]

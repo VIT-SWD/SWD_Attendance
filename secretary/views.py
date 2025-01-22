@@ -39,7 +39,7 @@ def secretaryView(request):
         secretary = get_object_or_404(Secretary, user=request.user)
 
     #filtering events for show event functionality
-    # cutoff_date = date(2024, 12, 1)
+    # cutoff_date = date(2025, 1, 4)
     cutoff_date = date.today()
     events = []
 
@@ -50,6 +50,11 @@ def secretaryView(request):
         events.extend(Activity.objects.filter(name=secretary.flagshipEvent, date__gte=cutoff_date))
 
     return render(request, 'secretary.html', {'secretary': secretary, 'CURR_YEAR': settings.CURR_YEAR, 'CURR_SEM': settings.CURR_SEM, 'socialServices': socialServices, 'flagships': flagships, 'events': events})
+
+AASHAKIRAN = {
+    "CS-L": ["1-16", "17-32", "33-48", "49-64", "65-78"],
+    "IT-F": ["1-15", "16-31", "32-47", "48-63", "64-77"]
+}
 
 @login_required(login_url='userlogin')
 def add_activity(request):
@@ -92,6 +97,22 @@ def add_activity(request):
             divisions = str(divisions)[1:-1].replace("'", "")
         )
         new_activity.save()
+
+        #Only for Aashakiran
+        if activity == "Aashakiran":
+            for div in divisions:
+                dept, division, group = div.split('-')
+                group = int(group) - 1
+
+                min_roll, max_roll = AASHAKIRAN[dept + '-' + division][group].split('-')
+                min_roll = int(min_roll)
+                max_roll = int(max_roll)
+
+                volunteers = Volunteer.objects.filter(activity=activity, div=division, dept=dept, roll__range=(min_roll, max_roll))
+                for volunteer in volunteers:
+                    volunteer.attendance += f"#{eventDate.strftime('%d-%m-%Y')}" + ", "
+                    volunteer.save()
+            return redirect('secretary')
 
         for div in divisions:
             if div.count('-') == 1:
@@ -145,7 +166,15 @@ def activityDivisions(request):
         divisions = []
 
         if secretary.activity:
-            if len(settings.GROUPS[secretary.activity]) == 0:
+            #Only for Aashakiran
+            if secretary.activity == "Aashakiran":
+                for div in settings.DIVISIONS[secretary.activity]:
+                    cnt = 1
+                    for group in AASHAKIRAN[div]:
+                        divisions.append(div + '-' + str(cnt))
+                        cnt += 1
+            #After removing 'if' for Aashakiran, make this 'elif' to 'if' and the code will work fine.
+            elif len(settings.GROUPS[secretary.activity]) == 0:
                 for div in settings.DIVISIONS[secretary.activity]:
                     divisions.append(div)
             else:
@@ -169,6 +198,105 @@ def activityDivisions(request):
         return JsonResponse({'divisions': divisions})
     else:
         return JsonResponse({'error': 'Invalid request method'}, status=400)
+
+def updateEvent(request):
+    if request.method == 'POST':
+        idx = int(request.POST.get('id')) - 1
+        venue = request.POST.get('venue')
+        startTime = request.POST.get('startTime')
+        endTime = request.POST.get('endTime')
+        mapLink = request.POST.get('mapLink')
+
+        secretary = get_object_or_404(Secretary, user=request.user)
+
+        # cutoff_date = date(2025, 1, 4)
+        cutoff_date = date.today()
+        events = []
+
+        if secretary.activity:
+            events.extend(Activity.objects.filter(name=secretary.activity, date__gte=cutoff_date))
+
+        if secretary.flagshipEvent:
+            events.extend(Activity.objects.filter(name=secretary.flagshipEvent, date__gte=cutoff_date))
+
+        if venue:
+            events[idx].venue = venue
+        if startTime:
+            events[idx].start_time = startTime
+        if endTime:
+            events[idx].end_time = endTime
+        if mapLink:
+            events[idx].map_link = mapLink
+        events[idx].save()
+
+    return redirect('secretary')
+
+def deleteEvent(request):
+    if request.method == 'POST':
+        idx = int(request.POST.get('id')) - 1
+        secretary = get_object_or_404(Secretary, user=request.user)
+
+        # cutoff_date = date(2025, 1, 4)
+        cutoff_date = date.today()
+        events = []
+
+        if secretary.activity:
+            events.extend(Activity.objects.filter(name=secretary.activity, date__gte=cutoff_date))
+
+        if secretary.flagshipEvent:
+            events.extend(Activity.objects.filter(name=secretary.flagshipEvent, date__gte=cutoff_date))
+
+        if events[idx].divisions:
+            divisions = events[idx].divisions.split(', ')
+        else:
+            divisions = []
+        eventDate = events[idx].date.strftime('%d-%m-%Y')
+        activity = events[idx].name
+
+        events[idx].delete()
+
+        #Only for Aashakiran
+        if activity == "Aashakiran":
+            for div in divisions:
+                dept, division, group = div.split('-')
+                group = int(group) - 1
+
+                min_roll, max_roll = AASHAKIRAN[dept + '-' + division][group].split('-')
+                min_roll = int(min_roll)
+                max_roll = int(max_roll)
+
+                volunteers = Volunteer.objects.filter(activity=activity, div=division, dept=dept, roll__range=(min_roll, max_roll))
+                for volunteer in volunteers:
+                    index = volunteer.attendance.find(eventDate)
+                    if index != -1:
+                        volunteer.attendance = volunteer.attendance[:index-1] + volunteer.attendance[index+12:]
+                        volunteer.save()
+            return redirect('secretary')
+
+        for div in divisions:
+            if div.count('-') == 1:
+                dept, division = div.split('-')
+                volunteers = Volunteer.objects.filter(activity=activity, div=division, dept=dept)
+                for volunteer in volunteers:
+                    index = volunteer.attendance.find(eventDate)
+                    if index != -1:
+                        volunteer.attendance = volunteer.attendance[:index-1] + volunteer.attendance[index+12:]
+                        volunteer.save()
+            else:
+                dept, division, group = div.split('-')
+                group = int(group) - 1
+
+                min_roll, max_roll = settings.GROUPS[activity][group].split('-')
+                min_roll = int(min_roll)
+                max_roll = int(max_roll)
+
+                volunteers = Volunteer.objects.filter(activity=activity, div=division, dept=dept, roll__range=(min_roll, max_roll))
+                for volunteer in volunteers:
+                    index = volunteer.attendance.find(eventDate)
+                    if index != -1:
+                        volunteer.attendance = volunteer.attendance[:index-1] + volunteer.attendance[index+12:]
+                        volunteer.save()
+    return redirect('secretary')
 
 def download_attendance(request):
     if request.method == 'POST':

@@ -136,7 +136,7 @@ class MarkAttendanceView(LoginRequiredMixin, View):
                 in_time_window_end = (datetime.combine(today, activity.start_time) + timedelta(minutes=40)).time()
 
                 out_time_window_start = (datetime.combine(today, activity.end_time) - timedelta(minutes=10)).time()
-                out_time_window_end = (datetime.combine(today, activity.end_time) + timedelta(minutes=20)).time()
+                out_time_window_end = (datetime.combine(today, activity.end_time) + timedelta(minutes=40)).time()
 
                 if not activity.isOnline:
                     # Calculate distance
@@ -147,7 +147,7 @@ class MarkAttendanceView(LoginRequiredMixin, View):
                     print(distance)
 
                     # Ensure volunteer is within 1 km range
-                    if distance > 1:
+                    if distance > 3:
                         error = "You are too far from the activity location to mark attendance."
                         continue
                         # return JsonResponse({'error': 'You are too far from the activity location to mark attendance.'}, status=400)
@@ -157,6 +157,8 @@ class MarkAttendanceView(LoginRequiredMixin, View):
                     if in_time_window_start <= current_time and current_time <= in_time_window_end:
                         # Mark in-time attendance
                         volunteer.marked_IN_attendance = True
+                        idx = volunteer.attendance.find(today.strftime("%d-%m-%Y"))
+                        volunteer.attendance = volunteer.attendance[:idx-1] + '?' + volunteer.attendance[idx:]
                         # volunteer.attendance += f"{attendance}, "
                         volunteer.save()
 
@@ -192,8 +194,13 @@ class MarkAttendanceView(LoginRequiredMixin, View):
                 else:
                     # Out-Time Attendance
                     if current_time >= out_time_window_start and current_time <= out_time_window_end:
-                        volunteer.attendance = volunteer.attendance[:-13] + "$" + volunteer.attendance[-12:]
-                        volunteer.marked_IN_attendance = False
+                        idx = volunteer.attendance.find(today.strftime("%d-%m-%Y"))
+
+                        if volunteer.attendance[idx-1] == "$":
+                            return JsonResponse({'message': 'Your Out-time attendance has already been marked!'}, status=200)
+
+                        volunteer.attendance = volunteer.attendance[:idx-1] + "$" + volunteer.attendance[idx:]
+                        # volunteer.marked_IN_attendance = False
                         volunteer.save()
 
                         # attendance_record = Attendance.objects.get(vol_prn=vol_prn, activity=activity_name)
@@ -288,7 +295,13 @@ def view_attendance(request):
 
         for entry in attendance_list:
             if entry:
-                status = 'Present' if entry.startswith('$') else 'Absent'
+                # status = 'Present' if entry.startswith('$') else 'Absent'
+                if entry.startswith('$'):
+                    status = 'Present'
+                elif entry.startswith('?'):
+                    status = 'In-Attendance Marked'
+                else:
+                    status = 'Absent'
                 date = entry[1:]
                 parsed_attendance.append({'date': date, 'status': status})
 

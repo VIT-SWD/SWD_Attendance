@@ -1,7 +1,9 @@
 from django.shortcuts import render
-from authentication.models import Volunteer, Activity
+from authentication.models import Volunteer, Activity, Attendance
 from django.contrib.auth.models import User
-from datetime import date
+from datetime import date, datetime
+from django.http import HttpResponse
+from collections import defaultdict
 
 VERIFICATION_CODE = '202320242025'
 
@@ -64,4 +66,26 @@ def deleteAttendance(request):
             vol.save()
 
         return render(request, 'delete_vol.html', {'message': 'Attendance deleted successfully!'})
+    return render(request, 'delete_vol.html')
+
+def coordAttendance(request):
+    if request.method == 'POST':
+        target_date = datetime(2025, 1, 4)
+        attendance_records = Attendance.objects.filter(time__date__gte=target_date.date()).order_by('time')
+
+        datewise_coords = defaultdict(set)
+        for record in attendance_records:
+            record_date = record.time.date()
+            if record.coord_name:  # Only include records with a coordinator name
+                datewise_coords[record_date].add(record.coord_name)
+
+        content = "Coordinators Attendance:\n"
+        for date, coords in datewise_coords.items():
+            content += f"\n{date}:\n"
+            content += "\n".join(f"  - {name}" for name in sorted(coords))
+
+        # Generate response with the text file
+        response = HttpResponse(content, content_type='text/plain')
+        response['Content-Disposition'] = 'attachment; filename="coord_attendance.txt"'
+        return response
     return render(request, 'delete_vol.html')

@@ -39,7 +39,7 @@ class Coordinator(models.Model):
     email = models.EmailField(max_length=30)
     gender = models.CharField(max_length=10)
     dept = models.CharField(max_length=60)
-    academic_year = models.CharField(max_length=10)
+    academic_year = models.CharField(max_length=10, blank=True)
     registered_academic_year = models.CharField(max_length=30, default='2024-2025')
     registered_semester = models.IntegerField(null=True, default=1)
     div = models.CharField(max_length=10)

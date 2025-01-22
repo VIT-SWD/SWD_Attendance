@@ -705,9 +705,27 @@ function startQRScanner() {
                    document.getElementById('actual_longitude').value = lon;
 
                }, err => {
-                   console.error('Error getting location: ', err);
-                   coordinates.innerText = 'Could not retrieve location';
-                   alert('Could not retrieve location!')
+                //   console.error('Error getting location: ', err);
+                //   coordinates.innerText = 'Could not retrieve location';
+                //   alert('Could not retrieve location!')
+                    let errorMessage = 'Could not retrieve location: ';
+                    switch (err.code) {
+                        case err.PERMISSION_DENIED:
+                            errorMessage += 'User denied the request for Geolocation.';
+                            break;
+                        case err.POSITION_UNAVAILABLE:
+                            errorMessage += 'Location information is unavailable.';
+                            break;
+                        case err.TIMEOUT:
+                            errorMessage += 'The request to get user location timed out.';
+                            break;
+                        case err.UNKNOWN_ERROR:
+                            errorMessage += 'An unknown error occurred.';
+                            break;
+                    }
+                    console.error(errorMessage);
+                    coordinates.innerText = errorMessage;
+                    alert(errorMessage);
                });
            } else {
                coordinates.innerText = 'Geolocation is not supported by your browser';
@@ -766,6 +784,9 @@ function startQRScanner() {
 
                     if (entry.status == 'Present'){
                         statusCell.style.color = 'green';
+                    }
+                    else if (entry.status == 'In-Attendance Marked'){
+                        statusCell.style.color = 'blue';
                     }
                     else{
                         statusCell.style.color = 'red';

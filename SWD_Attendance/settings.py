@@ -54,8 +54,8 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'django.contrib.sessions.middleware.SessionMiddleware',
-    'django_session_timeout.middleware.SessionTimeoutMiddleware',
+    # 'django.contrib.sessions.middleware.SessionMiddleware',
+    # 'django_session_timeout.middleware.SessionTimeoutMiddleware',
 ]
 
 ROOT_URLCONF = 'SWD_Attendance.urls'
@@ -212,7 +212,7 @@ GROUPS = {
     "Utkarsh": ["1-15", "16-30", "31-45", "46-60", "61-78"],
     "Matadhikar": ["1-15", "16-30", "31-45", "46-60"],
     "Muskaan": [],
-    "Udaan": [],
+    "Udaan": ["1-23", "24-34", "35-46", "47-69"],
     "Saksham": [],
     "Aashakiran": [],
     "Aavishkar": ["1-26", "27-54", "55-78"],
@@ -220,7 +220,7 @@ GROUPS = {
     "Aadhar": [],
     "Swaccha Pune": [],
     "Go Green": [],
-    "Night Patrolling": []
+    "Night Patrolling": [],
     # "Lilliput": [],
     # "Animal Rescue": [],
 }
@@ -254,5 +254,5 @@ EMAIL_HOST_PASSWORD = 'wgvwtstogrdtihml'
 EMAIL_USE_TLS = True
 EMAIL_USE_SSL = False
 
-SESSION_EXPIRE_SECONDS = 600
-SESSION_TIMEOUT_REDIRECT = 'https://swdsmartattendancesystem.pythonanywhere.com/auth/'
+# SESSION_EXPIRE_SECONDS = 600
+# SESSION_TIMEOUT_REDIRECT = 'https://swdsmartattendancesystem.pythonanywhere.com/auth/'
